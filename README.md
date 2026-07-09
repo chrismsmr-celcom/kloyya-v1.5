@@ -126,7 +126,7 @@ freeze it to the day it was compiled.
 ## Deploying
 
 ```bash
-npx vercel        # deploys from this directory; git is not required
+npx vercel
 ```
 
 The build fetches Google Fonts once and self-hosts them, so it needs network

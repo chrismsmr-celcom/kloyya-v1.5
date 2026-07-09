@@ -25,7 +25,7 @@ export const metadata: Metadata = {
   title: "Kloyya — one context layer for everything you run",
   description:
     "Kloyya reads across your email, calendar, and docs, then tells you what you'd otherwise miss.",
-  icons: { icon: "/kloyya-logo.png" },
+  // Icon is app/icon.svg, generated from the same aperture geometry as the mark.
 };
 
 export const viewport: Viewport = {
