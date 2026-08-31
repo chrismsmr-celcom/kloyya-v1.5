@@ -3,12 +3,13 @@
 import { NextResponse } from "next/server";
 
 import { getKloyyaUserId } from "@/lib/server/auth";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { getSupabaseAdmin } from "@/lib/server/supabase";
 
 export async function GET() {
   try {
     const userId = await getKloyyaUserId();
 
+    const supabaseAdmin = getSupabaseAdmin();
     const { data: memberships, error: membershipError } =
       await supabaseAdmin
         .from("organization_members")
