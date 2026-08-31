@@ -4,18 +4,11 @@ import "server-only";
 
 import { Composio } from "@composio/core";
 
-export const KLOYYA_TOOLKITS = [
+const TOOLKITS = [
   "gmail",
   "slack",
   "googlecalendar",
   "googledrive",
-] as const;
-
-export const KLOYYA_GMAIL_TOOLS = [
-  "GMAIL_FETCH_EMAILS",
-  "GMAIL_FETCH_MESSAGE_BY_MESSAGE_ID",
-  "GMAIL_CREATE_EMAIL_DRAFT",
-  "GMAIL_SEND_EMAIL",
 ] as const;
 
 function getComposio() {
@@ -25,21 +18,14 @@ function getComposio() {
     throw new Error("COMPOSIO_API_KEY is missing");
   }
 
-  return new Composio({
-    apiKey,
-  });
+  return new Composio({ apiKey });
 }
 
-export async function createKloyyaSession(userId: string) {
-  const composio = getComposio();
-
-  return composio.sessions.create(userId, {
-    toolkits: [...KLOYYA_TOOLKITS],
-    tools: {
-      gmail: {
-        enable: [...KLOYYA_GMAIL_TOOLS],
-      },
-    },
+export async function createKloyyaSession(
+  userId: string,
+) {
+  return getComposio().sessions.create(userId, {
+    toolkits: [...TOOLKITS],
     manageConnections: {
       enable: true,
       callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
@@ -53,10 +39,12 @@ export async function authorizeToolkit(
 ) {
   const session = await createKloyyaSession(userId);
 
-  const authorization = await session.authorize(toolkit);
+  const connection = await session.authorize(toolkit, {
+    callbackUrl: `${process.env.NEXT_PUBLIC_APP_URL}/integrations`,
+  });
 
   return {
-    redirectUrl: authorization.redirectUrl,
+    redirectUrl: connection.redirectUrl,
     sessionId: session.sessionId,
   };
 }
@@ -68,8 +56,14 @@ export async function executeComposioTool(
 ) {
   const composio = getComposio();
 
-  return composio.tools.execute(toolSlug, {
-    userId,
-    arguments: arguments_,
-  });
+  return composio.tools.execute(
+    toolSlug,
+    {
+      userId,
+      arguments: arguments_,
+    },
+    {
+      dangerouslySkipVersionCheck: true,
+    },
+  );
 }
