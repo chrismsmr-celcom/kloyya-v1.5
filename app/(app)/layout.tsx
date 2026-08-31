@@ -1,13 +1,16 @@
-import { AppShell } from "@/components/app-shell";
-
-/**
- * Rendered per request so the server clock matches the browser's. Every date in
- * the demo is derived from `now` (see lib/dates.ts) — prerendering this at
- * build time would freeze the story to the day it was compiled and produce a
- * hydration mismatch besides.
- */
-export const dynamic = "force-dynamic";
+import { Sidebar } from "@/components/shell/sidebar";
+import { Topbar } from "@/components/shell/topbar";
+import { Toaster } from "@/components/shell/toaster";
 
 export default function AppLayout({ children }: { children: React.ReactNode }) {
-  return <AppShell>{children}</AppShell>;
+  return (
+    <div className="flex min-h-screen w-full">
+      <Sidebar />
+      <div className="flex min-w-0 flex-1 flex-col">
+        <Topbar />
+        <main className="flex-1 px-4 py-6 lg:px-8 lg:py-8">{children}</main>
+      </div>
+      <Toaster />
+    </div>
+  );
 }

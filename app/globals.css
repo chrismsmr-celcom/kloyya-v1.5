@@ -1,260 +1,86 @@
 @import "tailwindcss";
 
-/* ─────────────────────────────────────────────────────────────
-   Kloyya tokens.
-   The whole product lives inside the violet→blue iris gradient.
-   `--color-signal` is the one color allowed to escape it, and it
-   is reserved exclusively for detected risk. Do not reuse it.
-   ───────────────────────────────────────────────────────────── */
-@theme {
-  --color-void: #08080c;
-  --color-abyss: #0b0b12;
-  --color-surface: #12121a;
-  --color-surface-2: #171722;
-
-  --color-hairline: rgba(237, 234, 246, 0.08);
-  --color-hairline-strong: rgba(237, 234, 246, 0.16);
-
-  --color-iris-violet: #7c5cff;
-  --color-iris-indigo: #4f46e5;
-  --color-iris-blue: #2a6ff6;
-  --color-iris-cyan: #38bdf8;
-
-  --color-signal: #f5a524;
-  --color-signal-dim: rgba(245, 165, 36, 0.14);
-
-  --color-paper: #edeaf6;
-  --color-paper-dim: #a29eb5;
-  --color-paper-faint: #6b6880;
-
-  --font-display: var(--font-bricolage), ui-sans-serif, system-ui, sans-serif;
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, sans-serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, monospace;
-
-  /* One easing curve for the entire app. Nothing defines its own. */
-  --ease-iris: cubic-bezier(0.32, 0.72, 0, 1);
+:root {
+  --background: #0b0c0e;
+  --surface: #131417;
+  --surface-2: #1a1b1f;
+  --border: #232428;
+  --foreground: #e8e8ea;
+  --muted: #8a8b91;
+  --accent: #4f7cff;
+  --good: #3fb87f;
+  --warn: #d6a13b;
+  --bad: #e25b52;
+  --critical: #c9463d;
 }
 
-@layer base {
-  html {
-    color-scheme: dark;
-  }
-
-  body {
-    background-color: var(--color-void);
-    color: var(--color-paper);
-    font-family: var(--font-sans);
-    -webkit-font-smoothing: antialiased;
-    text-rendering: optimizeLegibility;
-    overflow-x: hidden;
-  }
-
-  /* Ambient field. Fixed + painted once; never animated. */
-  body::before {
-    content: "";
-    position: fixed;
-    inset: 0;
-    z-index: -1;
-    pointer-events: none;
-    background:
-      radial-gradient(60rem 40rem at 12% -10%, rgba(124, 92, 255, 0.13), transparent 60%),
-      radial-gradient(50rem 36rem at 92% 8%, rgba(42, 111, 246, 0.11), transparent 62%),
-      radial-gradient(46rem 46rem at 50% 120%, rgba(79, 70, 229, 0.08), transparent 60%);
-  }
-
-  ::selection {
-    background: rgba(124, 92, 255, 0.32);
-    color: var(--color-paper);
-  }
-
-  :focus-visible {
-    outline: 2px solid var(--color-iris-violet);
-    outline-offset: 2px;
-    border-radius: 4px;
-  }
-
-  ::-webkit-scrollbar {
-    width: 10px;
-    height: 10px;
-  }
-  ::-webkit-scrollbar-track {
-    background: transparent;
-  }
-  ::-webkit-scrollbar-thumb {
-    background: rgba(237, 234, 246, 0.09);
-    border: 3px solid transparent;
-    background-clip: content-box;
-    border-radius: 8px;
-  }
-  ::-webkit-scrollbar-thumb:hover {
-    background: rgba(237, 234, 246, 0.18);
-    background-clip: content-box;
-  }
+@theme inline {
+  --color-background: var(--background);
+  --color-surface: var(--surface);
+  --color-surface-2: var(--surface-2);
+  --color-border: var(--border);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
+  --color-accent: var(--accent);
+  --color-good: var(--good);
+  --color-warn: var(--warn);
+  --color-bad: var(--bad);
+  --color-critical: var(--critical);
+  --font-sans: var(--font-geist-sans);
+  --font-mono: var(--font-geist-mono);
 }
 
-@layer components {
-  /* Glass surface. Note: no backdrop-filter here — see .glass-blur.
-     Blur is expensive; it is opt-in and capped to a few elements. */
-  .glass {
-    position: relative;
-    background: linear-gradient(
-      158deg,
-      rgba(255, 255, 255, 0.05) 0%,
-      rgba(255, 255, 255, 0.017) 55%,
-      rgba(255, 255, 255, 0.028) 100%
-    );
-    border: 1px solid var(--color-hairline);
-    border-radius: 18px;
-    box-shadow:
-      0 1px 0 0 rgba(255, 255, 255, 0.05) inset,
-      0 24px 60px -32px rgba(0, 0, 0, 0.9);
-  }
+* {
+  border-color: var(--border);
+}
 
-  /* Only the app chrome and the command palette get this. */
-  .glass-blur {
-    backdrop-filter: blur(22px) saturate(150%);
-    -webkit-backdrop-filter: blur(22px) saturate(150%);
-  }
+html {
+  color-scheme: dark;
+}
 
-  /* Gradient glow. Pre-rendered; only `opacity` animates, never
-     `filter` or `box-shadow`. This is what keeps the demo at 60fps. */
-  .glow {
-    position: relative;
-    isolation: isolate;
-  }
-  .glow::before {
-    content: "";
-    position: absolute;
-    inset: -1px;
-    z-index: -1;
-    border-radius: inherit;
-    padding: 1px;
-    background: linear-gradient(
-      140deg,
-      var(--color-iris-violet),
-      var(--color-iris-blue) 55%,
-      var(--color-iris-cyan)
-    );
-    -webkit-mask:
-      linear-gradient(#000 0 0) content-box,
-      linear-gradient(#000 0 0);
-    -webkit-mask-composite: xor;
-    mask-composite: exclude;
+body {
+  background: var(--background);
+  color: var(--foreground);
+  font-family: var(--font-sans), Arial, Helvetica, sans-serif;
+  font-feature-settings: "cv11", "ss01";
+}
+
+::-webkit-scrollbar {
+  width: 10px;
+  height: 10px;
+}
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+::-webkit-scrollbar-thumb {
+  background: #232428;
+  border-radius: 999px;
+}
+::-webkit-scrollbar-thumb:hover {
+  background: #2d2e33;
+}
+
+.panel {
+  background: var(--surface);
+  border: 1px solid var(--border);
+}
+
+.panel-float {
+  background: var(--surface-2);
+  border: 1px solid var(--border);
+  box-shadow: 0 8px 24px -8px rgba(0, 0, 0, 0.5);
+}
+
+@keyframes fade-up {
+  from {
     opacity: 0;
-    transition: opacity 0.45s var(--ease-iris);
-    will-change: opacity;
+    transform: translateY(4px);
   }
-  .glow:hover::before,
-  .glow[data-active="true"]::before {
-    opacity: 0.65;
-  }
-
-  /* Soft bloom behind a focal element. Opacity-only. */
-  .bloom::after {
-    content: "";
-    position: absolute;
-    inset: -30%;
-    z-index: -1;
-    pointer-events: none;
-    background: radial-gradient(
-      closest-side,
-      rgba(124, 92, 255, 0.3),
-      rgba(42, 111, 246, 0.1) 55%,
-      transparent 78%
-    );
-    opacity: 0.75;
-  }
-
-  .hairline {
-    border-color: var(--color-hairline);
-  }
-
-  /* The provenance chip: every AI claim cites its source. */
-  .chip {
-    font-family: var(--font-mono);
-    font-size: 11px;
-    letter-spacing: 0.02em;
-    line-height: 1;
-    padding: 5px 8px;
-    border-radius: 6px;
-    border: 1px solid var(--color-hairline);
-    background: rgba(255, 255, 255, 0.03);
-    color: var(--color-paper-dim);
-    white-space: nowrap;
-  }
-
-  .text-gradient {
-    background: linear-gradient(
-      110deg,
-      var(--color-paper) 8%,
-      var(--color-iris-violet) 46%,
-      var(--color-iris-cyan) 92%
-    );
-    -webkit-background-clip: text;
-    background-clip: text;
-    color: transparent;
-  }
-}
-
-@keyframes caret {
-  0%,
-  49% {
-    opacity: 1;
-  }
-  50%,
-  100% {
-    opacity: 0;
-  }
-}
-
-/* Skeletons sweep like an iris rather than shimmering like every other
-   loading state on the internet. `transform` only. */
-@keyframes iris-sweep {
   to {
-    transform: rotate(360deg);
+    opacity: 1;
+    transform: translateY(0);
   }
 }
-
-@layer utilities {
-  .grid-lines {
-    background-image:
-      linear-gradient(to right, rgba(237, 234, 246, 0.035) 1px, transparent 1px),
-      linear-gradient(to bottom, rgba(237, 234, 246, 0.035) 1px, transparent 1px);
-    background-size: 56px 56px;
-    -webkit-mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000, transparent 75%);
-    mask-image: radial-gradient(ellipse 70% 60% at 50% 40%, #000, transparent 75%);
-  }
-}
-
-/* React Flow theming — keeps the graph inside the palette. */
-.react-flow__background {
-  background-color: transparent;
-}
-.react-flow__edge-path {
-  stroke: rgba(124, 92, 255, 0.32);
-}
-.react-flow__edge.animated .react-flow__edge-path {
-  stroke: rgba(124, 92, 255, 0.55);
-}
-.react-flow__attribution {
-  display: none;
-}
-.react-flow__controls-button {
-  background: var(--color-surface) !important;
-  border-bottom: 1px solid var(--color-hairline) !important;
-  fill: var(--color-paper-dim) !important;
-}
-.react-flow__controls-button:hover {
-  background: var(--color-surface-2) !important;
-}
-
-@media (prefers-reduced-motion: reduce) {
-  *,
-  *::before,
-  *::after {
-    animation-duration: 0.01ms !important;
-    animation-iteration-count: 1 !important;
-    transition-duration: 0.01ms !important;
-    scroll-behavior: auto !important;
-  }
+.fade-up {
+  animation: fade-up 0.2s ease both;
 }

@@ -1,46 +1,32 @@
-import type { Metadata, Viewport } from "next";
-import { Bricolage_Grotesque, Geist, Geist_Mono } from "next/font/google";
+import type { Metadata } from "next";
+import { Geist, Geist_Mono } from "next/font/google";
 import "./globals.css";
-import "@xyflow/react/dist/style.css";
+import { DemoStoreProvider } from "@/lib/store";
 
-const bricolage = Bricolage_Grotesque({
-  variable: "--font-bricolage",
+const geistSans = Geist({
+  variable: "--font-geist-sans",
   subsets: ["latin"],
-  display: "swap",
-});
-
-const geist = Geist({
-  variable: "--font-geist",
-  subsets: ["latin"],
-  display: "swap",
 });
 
 const geistMono = Geist_Mono({
   variable: "--font-geist-mono",
   subsets: ["latin"],
-  display: "swap",
 });
 
 export const metadata: Metadata = {
-  title: "Kloyya — one context layer for everything you run",
+  title: "Kloyya — AI Operating Layer for Business",
   description:
-    "Kloyya reads across your email, calendar, and docs, then tells you what you'd otherwise miss.",
-  // Icon is app/icon.svg, generated from the same aperture geometry as the mark.
+    "Tell Kloyya the outcome you want. It plans the work, coordinates the business, asks for approval when needed, and reports the result.",
 };
 
-export const viewport: Viewport = {
-  themeColor: "#08080c",
-};
-
-export default function RootLayout({
-  children,
-}: Readonly<{ children: React.ReactNode }>) {
+export default function RootLayout({ children }: LayoutProps<"/">) {
   return (
-    <html lang="en">
-      <body
-        className={`${bricolage.variable} ${geist.variable} ${geistMono.variable} antialiased`}
-      >
-        {children}
+    <html
+      lang="en"
+      className={`${geistSans.variable} ${geistMono.variable} h-full antialiased`}
+    >
+      <body className="min-h-full flex flex-col">
+        <DemoStoreProvider>{children}</DemoStoreProvider>
       </body>
     </html>
   );

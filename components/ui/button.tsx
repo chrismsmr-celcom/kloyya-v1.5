@@ -1,40 +1,36 @@
-"use client";
-
-import * as React from "react";
-import { cva, type VariantProps } from "class-variance-authority";
 import { cn } from "@/lib/utils";
+import type { ButtonHTMLAttributes } from "react";
 
-const button = cva(
-  "inline-flex items-center justify-center gap-2 whitespace-nowrap rounded-xl text-sm font-medium transition-[transform,opacity,background-color,border-color] duration-200 ease-[cubic-bezier(0.32,0.72,0,1)] disabled:pointer-events-none disabled:opacity-45 active:scale-[0.985] [&_svg]:size-4 [&_svg]:shrink-0",
-  {
-    variants: {
-      variant: {
-        primary:
-          "bg-gradient-to-br from-iris-violet to-iris-blue text-white shadow-[0_10px_30px_-12px_rgba(124,92,255,0.9)] hover:brightness-110",
-        glass:
-          "glass glow border-hairline text-paper hover:border-hairline-strong",
-        ghost: "text-paper-dim hover:text-paper hover:bg-white/[0.04]",
-        signal:
-          "border border-signal/40 bg-signal-dim text-signal hover:bg-signal/20",
-      },
-      size: {
-        sm: "h-9 px-3.5",
-        md: "h-11 px-5",
-        lg: "h-12 px-6 text-[15px]",
-        icon: "size-9",
-      },
-    },
-    defaultVariants: { variant: "primary", size: "md" },
-  },
-);
+type Variant = "primary" | "secondary" | "ghost" | "danger";
+type Size = "sm" | "md";
 
-export interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof button> {}
+const variants: Record<Variant, string> = {
+  primary: "bg-accent text-white hover:bg-accent/85",
+  secondary: "bg-white/[0.05] text-foreground hover:bg-white/[0.09] border border-white/10",
+  ghost: "text-muted hover:text-foreground hover:bg-white/[0.05]",
+  danger: "bg-bad/10 text-bad hover:bg-bad/15 border border-bad/25",
+};
 
-export const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
-  ({ className, variant, size, ...props }, ref) => (
-    <button ref={ref} className={cn(button({ variant, size }), className)} {...props} />
-  ),
-);
-Button.displayName = "Button";
+const sizes: Record<Size, string> = {
+  sm: "text-xs px-3 py-1.5 rounded-md",
+  md: "text-sm px-4 py-2 rounded-md",
+};
+
+export function Button({
+  className,
+  variant = "primary",
+  size = "md",
+  ...props
+}: ButtonHTMLAttributes<HTMLButtonElement> & { variant?: Variant; size?: Size }) {
+  return (
+    <button
+      className={cn(
+        "inline-flex items-center justify-center gap-1.5 font-medium transition-colors disabled:opacity-40 disabled:pointer-events-none",
+        variants[variant],
+        sizes[size],
+        className
+      )}
+      {...props}
+    />
+  );
+}
