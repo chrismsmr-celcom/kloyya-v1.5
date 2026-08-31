@@ -2,18 +2,19 @@
 
 import "server-only";
 
-import { headers } from "next/headers";
+import { createClient } from "@/lib/supabase/server";
 
 export async function getKloyyaUserId(): Promise<string> {
-  const headerStore = await headers();
+  const supabase = await createClient();
 
-  const authenticatedUser =
-    headerStore.get("x-kloyya-user-id") ||
-    process.env.KLOYYA_DEMO_USER_ID;
+  const {
+    data: { user },
+    error,
+  } = await supabase.auth.getUser();
 
-  if (!authenticatedUser) {
-    throw new Error("KLOYYA_USER_ID_REQUIRED");
+  if (error || !user) {
+    throw new Error("UNAUTHENTICATED");
   }
 
-  return authenticatedUser;
+  return user.id;
 }
