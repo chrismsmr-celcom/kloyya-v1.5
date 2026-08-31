@@ -4,34 +4,40 @@ import "server-only";
 
 import { Composio } from "@composio/core";
 
-if (!process.env.COMPOSIO_API_KEY) {
-  throw new Error("COMPOSIO_API_KEY is missing");
-}
-
-export const composio = new Composio({
-  apiKey: process.env.COMPOSIO_API_KEY,
-});
-
 export const KLOYYA_TOOLKITS = [
   "gmail",
   "slack",
   "googlecalendar",
   "googledrive",
-];
+] as const;
 
 export const KLOYYA_GMAIL_TOOLS = [
   "GMAIL_FETCH_EMAILS",
   "GMAIL_FETCH_MESSAGE_BY_MESSAGE_ID",
   "GMAIL_CREATE_EMAIL_DRAFT",
   "GMAIL_SEND_EMAIL",
-];
+] as const;
+
+function getComposio() {
+  const apiKey = process.env.COMPOSIO_API_KEY;
+
+  if (!apiKey) {
+    throw new Error("COMPOSIO_API_KEY is missing");
+  }
+
+  return new Composio({
+    apiKey,
+  });
+}
 
 export async function createKloyyaSession(userId: string) {
+  const composio = getComposio();
+
   return composio.sessions.create(userId, {
-    toolkits: KLOYYA_TOOLKITS,
+    toolkits: [...KLOYYA_TOOLKITS],
     tools: {
       gmail: {
-        enable: KLOYYA_GMAIL_TOOLS,
+        enable: [...KLOYYA_GMAIL_TOOLS],
       },
     },
     manageConnections: {
@@ -60,6 +66,8 @@ export async function executeComposioTool(
   userId: string,
   arguments_: Record<string, unknown>,
 ) {
+  const composio = getComposio();
+
   return composio.tools.execute(toolSlug, {
     userId,
     arguments: arguments_,
