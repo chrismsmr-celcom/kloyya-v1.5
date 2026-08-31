@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { executeComposioTool } from "@/lib/server/composio";
 import { getKloyyaUserId } from "@/lib/server/auth";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { getSupabaseAdmin } from "@/lib/server/supabase";
 import { evaluatePolicy } from "@/lib/server/policy";
 
 type Params = {
@@ -18,7 +18,7 @@ export async function POST(
   try {
     const userId = await getKloyyaUserId();
     const { id } = await params;
-
+    const supabaseAdmin = getSupabaseAdmin();
     const { data: action, error: actionError } = await supabaseAdmin
       .from("actions")
       .select(`
