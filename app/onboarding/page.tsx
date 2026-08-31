@@ -49,6 +49,10 @@ export default function OnboardingPage() {
   const [industry, setIndustry] = useState<string | null>(null);
   const [customIndustry, setCustomIndustry] = useState("");
   const [description, setDescription] = useState("");
+  const [savingOnboarding, setSavingOnboarding] = useState(false);
+  const [onboardingError, setOnboardingError] = useState<string | null>(null);
+
+  const [connectingSource, setConnectingSource] = useState<string | null>(null);
   const [permissions, setPermissions] = useState<Record<string, boolean>>(() =>
     Object.fromEntries(PERMISSIONS.map((p, i) => [p.id, i < 3]))
   );
