@@ -21,9 +21,7 @@ function getComposio() {
   return new Composio({ apiKey });
 }
 
-export async function createKloyyaSession(
-  userId: string,
-) {
+export async function createKloyyaSession(userId: string) {
   return getComposio().sessions.create(userId, {
     toolkits: [...TOOLKITS],
     manageConnections: {
@@ -56,14 +54,9 @@ export async function executeComposioTool(
 ) {
   const composio = getComposio();
 
-  return composio.tools.execute(
-    toolSlug,
-    {
-      userId,
-      arguments: arguments_,
-    },
-    {
-      dangerouslySkipVersionCheck: true,
-    },
-  );
+  return composio.tools.execute(toolSlug, {
+    userId,
+    arguments: arguments_,
+    dangerouslySkipVersionCheck: true,
+  });
 }
