@@ -2,7 +2,6 @@ import type {
   ActionRecord,
   Issue,
   Location,
-  OutcomeEntry,
   Recommendation,
   Resource,
   WorkItem,
@@ -89,7 +88,10 @@ export const resources: Resource[] = [
       { label: "Fuel", value: "91%" },
       { label: "Capacity free", value: "1,240 kg" },
     ],
-    recentEvents: ["work.completed — 40 min ago", "vehicle.location.updated — 2 min ago"],
+    recentEvents: [
+      "work.completed — 40 min ago",
+      "vehicle.location.updated — 2 min ago",
+    ],
   },
   {
     id: "res_driver_mutale",
@@ -115,7 +117,10 @@ export const resources: Resource[] = [
       { label: "Runtime hours", value: "3,204" },
       { label: "Fuel consumption", value: "+22%" },
     ],
-    recentEvents: ["machine.temperature.high — 1h ago", "issue.detected — 1h ago"],
+    recentEvents: [
+      "machine.temperature.high — 1h ago",
+      "issue.detected — 1h ago",
+    ],
   },
   {
     id: "res_inv_cold",
@@ -213,7 +218,8 @@ function makeDelayAction(): ActionRecord {
     currentStep: 0,
     status: "pending_approval",
     executionMode: "approval_required",
-    estimatedImpact: "Delay reduced by ~31 min · customer notified automatically",
+    estimatedImpact:
+      "Delay reduced by ~31 min · customer notified automatically",
   };
 }
 
@@ -240,10 +246,22 @@ export const issues: Issue[] = [
     workId: "wk_100",
     detectedAt: "8 minutes ago",
     evidence: [
-      { label: "Engine temperature increased 18% over 30 minutes", confidence: 0.95 },
-      { label: "Previous scheduled maintenance is overdue by 3 days", confidence: 0.88 },
-      { label: "Coolant alert received from telematics feed", confidence: 0.82 },
-      { label: "Vehicle operating under high load on route 4821", confidence: 0.77 },
+      {
+        label: "Engine temperature increased 18% over 30 minutes",
+        confidence: 0.95,
+      },
+      {
+        label: "Previous scheduled maintenance is overdue by 3 days",
+        confidence: 0.88,
+      },
+      {
+        label: "Coolant alert received from telematics feed",
+        confidence: 0.82,
+      },
+      {
+        label: "Vehicle operating under high load on route 4821",
+        confidence: 0.77,
+      },
     ],
     recommendation: recDelay,
   },
@@ -259,8 +277,14 @@ export const issues: Issue[] = [
     workId: "wk_101",
     detectedAt: "22 minutes ago",
     evidence: [
-      { label: "Inventory level 17%, threshold 20%", confidence: 0.99 },
-      { label: "Consumption rate steady over 7 days", confidence: 0.7 },
+      {
+        label: "Inventory level 17%, threshold 20%",
+        confidence: 0.99,
+      },
+      {
+        label: "Consumption rate steady over 7 days",
+        confidence: 0.7,
+      },
     ],
     recommendation: {
       id: "rec_reorder_cold",
@@ -272,7 +296,12 @@ export const issues: Issue[] = [
       action: {
         id: "act_reorder_cold",
         title: "Create reorder work order — Cold Storage",
-        steps: ["Draft purchase request", "Route to supplier", "Confirm ETA", "Update inventory"],
+        steps: [
+          "Draft purchase request",
+          "Route to supplier",
+          "Confirm ETA",
+          "Update inventory",
+        ],
         currentStep: 0,
         status: "pending_approval",
         executionMode: "approval_required",
@@ -292,8 +321,14 @@ export const issues: Issue[] = [
     workId: "wk_102",
     detectedAt: "1 hour ago",
     evidence: [
-      { label: "Runtime hours exceed maintenance interval by 340 hrs", confidence: 0.93 },
-      { label: "Fuel consumption up 22% vs. baseline", confidence: 0.8 },
+      {
+        label: "Runtime hours exceed maintenance interval by 340 hrs",
+        confidence: 0.93,
+      },
+      {
+        label: "Fuel consumption up 22% vs. baseline",
+        confidence: 0.8,
+      },
     ],
     recommendation: {
       id: "rec_gen5",
@@ -305,7 +340,12 @@ export const issues: Issue[] = [
       action: {
         id: "act_gen5",
         title: "Dispatch technician for Generator 5 service",
-        steps: ["Assign technician", "Order replacement part", "Schedule service window", "Verify repair"],
+        steps: [
+          "Assign technician",
+          "Order replacement part",
+          "Schedule service window",
+          "Verify repair",
+        ],
         currentStep: 1,
         status: "approved",
         executionMode: "approval_required",
@@ -313,13 +353,6 @@ export const issues: Issue[] = [
       },
     },
   },
-];
-
-export const outcomes: OutcomeEntry[] = [
-  { id: "out_1", label: "Delays reduced", value: "4h 12m", detail: "This week, across 11 deliveries" },
-  { id: "out_2", label: "Downtime prevented", value: "$8,400", detail: "Generator 5 + 2 other assets" },
-  { id: "out_3", label: "Issues resolved by AI", value: "27", detail: "68% without escalation" },
-  { id: "out_4", label: "Hours saved", value: "19.5", detail: "Manual coordination time" },
 ];
 
 export const trend = [
@@ -332,10 +365,18 @@ export const trend = [
   { day: "Sun", resolved: 5, delayMinutes: 19 },
 ];
 
-export function locationName(id: string): string {
-  return locations.find((l) => l.id === id)?.name ?? id;
+export function locationName(id: string | null | undefined): string {
+  if (!id) {
+    return "Unknown location";
+  }
+
+  return locations.find((location) => location.id === id)?.name ?? id;
 }
 
-export function resourceName(id: string): string {
-  return resources.find((r) => r.id === id)?.name ?? id;
+export function resourceName(id: string | null | undefined): string {
+  if (!id) {
+    return "Unknown resource";
+  }
+
+  return resources.find((resource) => resource.id === id)?.name ?? id;
 }
