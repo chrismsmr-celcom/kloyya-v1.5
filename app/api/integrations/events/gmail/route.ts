@@ -4,12 +4,12 @@ import { NextResponse } from "next/server";
 
 import { executeComposioTool } from "@/lib/server/composio";
 import { getKloyyaUserId } from "@/lib/server/auth";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { getSupabaseAdmin } from "@/lib/server/supabase";
 
 export async function POST(request: Request) {
   try {
     const userId = await getKloyyaUserId();
-
+    const supabaseAdmin = getSupabaseAdmin();
     const body = await request.json().catch(() => ({}));
 
     const query =
