@@ -64,7 +64,8 @@ export type ActionStatus =
   | "approved"
   | "executing"
   | "completed"
-  | "rejected";
+  | "rejected"
+  | "failed";
 
 export type ActionRecord = {
   id: string;
@@ -93,7 +94,10 @@ export type Issue = {
   description: string;
   severity: Severity;
   status: IssueStatus;
-  locationId: string;
+  // Pas de colonne location_id / resource_id / work_id dans le schema
+  // Supabase actuel (voir app/api/dashboard/route.ts) : ces champs restent
+  // optionnels tant que ces tables n'existent pas côté backend.
+  locationId?: string;
   resourceId?: string;
   workId?: string;
   detectedAt: string;
