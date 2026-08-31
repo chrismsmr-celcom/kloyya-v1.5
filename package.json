@@ -10,6 +10,7 @@
   },
   "dependencies": {
     "@composio/core": "latest",
+    "@supabase/ssr": "latest",
     "@supabase/supabase-js": "latest",
     "clsx": "^2.1.1",
     "framer-motion": "^13.1.1",
