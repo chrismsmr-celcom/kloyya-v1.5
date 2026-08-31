@@ -4,7 +4,7 @@ import { NextResponse } from "next/server";
 
 import { analyzeBusinessSignal } from "@/lib/server/ai";
 import { getKloyyaUserId } from "@/lib/server/auth";
-import { supabaseAdmin } from "@/lib/server/supabase";
+import { getSupabaseAdmin } from "@/lib/server/supabase";
 
 export async function POST(request: Request) {
   try {
@@ -20,7 +20,8 @@ export async function POST(request: Request) {
         { status: 400 },
       );
     }
-
+    
+    const supabaseAdmin = getSupabaseAdmin();
     const analysis = await analyzeBusinessSignal({
       source: body.source,
       content: body.content,
