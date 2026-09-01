@@ -14,17 +14,26 @@ import { Badge } from "@/components/ui/badge";
 import { HealthRing } from "@/components/ui/health-ring";
 import { Button } from "@/components/ui/button";
 import { useDemoStore } from "@/lib/store";
-import { locationName, resourceName, work as allWork } from "@/lib/demo-data";
+import { locationName, resourceName } from "@/lib/demo-data";
 import { severityTone } from "@/lib/format";
 
 export default function CommandCenterPage() {
-  const { issues, outcomes, approveAction, orgProfile, loadingDashboard, dashboardError } =
-    useDemoStore();
+  const {
+    issues,
+    outcomes,
+    work,
+    locations,
+    resources,
+    approveAction,
+    orgProfile,
+    loadingDashboard,
+    dashboardError,
+  } = useDemoStore();
 
   const open = issues.filter((i) => i.status === "open" || i.status === "investigating");
   const critical = open.filter((i) => i.severity === "critical" || i.severity === "high").length;
   const pendingApprovals = issues.filter((i) => i.recommendation.action.status === "pending_approval");
-  const atRisk = allWork.filter((w) => w.status === "blocked" || (w.delayMinutes ?? 0) > 0).length;
+  const atRisk = work.filter((w) => w.status === "blocked" || (w.delayMinutes ?? 0) > 0).length;
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -69,7 +78,7 @@ export default function CommandCenterPage() {
         <StatTile
           label="Work at risk"
           value={String(atRisk)}
-          detail={`${allWork.length} active work items`}
+          detail={`${work.length} active work items`}
           icon={Clock}
           tone={atRisk > 0 ? "warn" : "good"}
         />
@@ -110,8 +119,8 @@ export default function CommandCenterPage() {
                     <span className="truncate text-sm font-medium text-foreground">{issue.title}</span>
                   </div>
                   <div className="mt-1 text-[11px] text-muted">
-                    {locationName(issue.locationId)}
-                    {issue.resourceId ? ` · ${resourceName(issue.resourceId)}` : ""} · {issue.detectedAt}
+                    {locationName(locations, issue.locationId)}
+                    {issue.resourceId ? ` · ${resourceName(resources, issue.resourceId)}` : ""} · {issue.detectedAt}
                   </div>
                 </div>
                 <div className="flex shrink-0 items-center gap-2">
