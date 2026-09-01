@@ -5,32 +5,32 @@ import { usePathname } from "next/navigation";
 import { useState } from "react";
 import {
   LayoutDashboard,
+  Inbox,
+  CalendarDays,
+  BrainCircuit,
   ShieldCheck,
+  KanbanSquare,
   MapPin,
   Boxes,
-  KanbanSquare,
-  MessageSquare,
+  Sparkles,
   BarChart3,
   Settings,
   LifeBuoy,
+  UserCircle,
   Building2,
   ChevronRight,
-  Sparkles,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
 
-// Définition des sections du menu, alignées sur tes routes API existantes
+// Définition des sections et éléments du menu
 const MENU_SECTIONS = [
   {
-    title: "Supervision",
+    title: "Vue d'ensemble",
     items: [
       { label: "Dashboard", href: "/command-center", icon: LayoutDashboard },
-      { 
-        label: "Centre d'Approbation", 
-        href: "/approvals", 
-        icon: ShieldCheck, 
-        highlight: true // Mise en avant pour le "Human-in-the-loop"
-      },
+      { label: "Inbox Unifiée", href: "/inbox", icon: Inbox, badge: 3 }, // Badge pour les notifs non lues
+      { label: "Calendrier", href: "/calendar", icon: CalendarDays },
     ],
   },
   {
@@ -42,10 +42,11 @@ const MENU_SECTIONS = [
     ],
   },
   {
-    title: "Intelligence Kloyya",
+    title: "Intelligence & Contrôle",
     items: [
-      { label: "Chat avec Kloyya", href: "/chat", icon: MessageSquare },
-      { label: "Rapports & Insights", href: "/outcomes", icon: BarChart3 },
+      { label: "Insights Kloyya", href: "/insights", icon: BrainCircuit },
+      { label: "Centre d'Approbation", href: "/approvals", icon: ShieldCheck, highlight: true },
+      { label: "Rapports", href: "/outcomes", icon: BarChart3 },
     ],
   },
 ];
@@ -68,7 +69,7 @@ export function Sidebar() {
         </div>
       </div>
 
-      {/* Navigation Principale */}
+      {/* Navigation Principale (Scrollable) */}
       <nav className="flex-1 overflow-y-auto px-3 py-4">
         {MENU_SECTIONS.map((section, idx) => (
           <div key={idx} className="mb-6">
@@ -77,7 +78,6 @@ export function Sidebar() {
             </h3>
             <ul className="space-y-1">
               {section.items.map((item) => {
-                // Gestion précise de l'état actif, même pour les sous-routes
                 const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
                 const Icon = item.icon;
 
@@ -90,7 +90,6 @@ export function Sidebar() {
                         isActive
                           ? "bg-accent/10 text-accent"
                           : "text-muted hover:bg-white/5 hover:text-foreground",
-                        // Si c'est un élément mis en avant (comme les approbations) et qu'il n'est pas actif
                         item.highlight && !isActive && "border border-accent/30 text-accent hover:bg-accent/5"
                       )}
                     >
@@ -103,6 +102,11 @@ export function Sidebar() {
                         />
                         {item.label}
                       </div>
+                      {item.badge && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+                          {item.badge}
+                        </span>
+                      )}
                     </Link>
                   </li>
                 );
@@ -110,6 +114,20 @@ export function Sidebar() {
             </ul>
           </div>
         ))}
+
+        {/* Bouton Chatbot Kloyya (Mis en avant) */}
+        <div className="mt-6 rounded-lg border border-accent/20 bg-accent/5 p-3">
+          <Link
+            href="/ai"
+            className="flex items-center gap-3 text-sm font-semibold text-accent transition-colors hover:text-accent/80"
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span>Demander à Kloyya</span>
+          </Link>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            Posez une question sur vos sites, ressources ou données connectées.
+          </p>
+        </div>
       </nav>
 
       {/* Section Basse (Paramètres, Support, Profil) */}
@@ -144,21 +162,21 @@ export function Sidebar() {
             <Building2 className="h-5 w-5" />
           </div>
           <div className="flex-1 text-left">
-            <p className="text-xs font-semibold text-foreground">Mon Organisation</p>
+            <p className="text-xs font-semibold text-foreground">Acme Logistics</p>
             <p className="text-[10px] text-muted">Plan Team · Owner</p>
           </div>
           <ChevronRight className="h-4 w-4 text-muted" />
         </button>
       </div>
 
-      {/* --- MODALES --- */}
+      {/* --- MODALES (À implémenter ou connecter à tes composants existants) --- */}
       
-      {/* Modale Support */}
+      {/* Exemple de structure pour la modale Support */}
       {isSupportModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
             <h3 className="mb-4 text-lg font-semibold text-foreground">Contacter le Support</h3>
-            <p className="mb-4 text-sm text-muted">Notre équipe est disponible pour vous aider sur le terrain.</p>
+            <p className="mb-4 text-sm text-muted">Notre équipe est disponible pour vous aider.</p>
             <div className="space-y-3">
               <div className="rounded-md border border-border bg-white/5 p-3 text-sm text-foreground">
                 📧 support@kloyya.com
@@ -177,12 +195,12 @@ export function Sidebar() {
         </div>
       )}
 
-      {/* Modale Profil */}
+      {/* Exemple de structure pour la modale Profil */}
       {isProfileModalOpen && (
         <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
           <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
             <h3 className="mb-4 text-lg font-semibold text-foreground">Paramètres du Compte</h3>
-            <p className="mb-4 text-sm text-muted">Gérez votre institution, vos intégrations et votre session.</p>
+            <p className="mb-4 text-sm text-muted">Gérez votre institution et votre session.</p>
             <button
               onClick={() => setIsProfileModalOpen(false)}
               className="w-full rounded-md border border-border bg-surface py-2 text-sm font-semibold text-foreground hover:bg-white/5"
