@@ -63,13 +63,12 @@ export async function analyzeBusinessSignal(input: {
       "Content-Type": "application/json",
       Authorization: `Bearer ${apiKey}`,
     },
-    body: JSON.stringify({
-      model,
-      temperature: 0.1,
-      response_format: {
-        type: "json_object",
-      },
-      messages: [
+    // ✅ APRÈS (Code corrigé)
+body: JSON.stringify({
+  model,
+  temperature: 0.1,
+  // On enlève 'response_format' car le prompt et extractJson gèrent déjà le JSON
+  messages: [
         {
           role: "system",
           content: `
