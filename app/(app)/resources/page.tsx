@@ -1,7 +1,10 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { locationName, resources } from "@/lib/demo-data";
+import { locationName } from "@/lib/demo-data";
+import { useDemoStore } from "@/lib/store";
 import { Boxes, Truck, User, Wrench, Package, Warehouse } from "lucide-react";
 
 const icon: Record<string, typeof Truck> = {
@@ -20,6 +23,8 @@ const statusTone: Record<string, "good" | "neutral" | "warn" | "bad"> = {
 };
 
 export default function ResourcesPage() {
+  const { resources, locations, loadingDashboard } = useDemoStore();
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-6">
@@ -42,7 +47,7 @@ export default function ResourcesPage() {
                   </div>
                   <div className="min-w-0">
                     <div className="truncate text-sm font-medium text-foreground">{r.name}</div>
-                    <div className="text-[11px] text-muted">{locationName(r.locationId)}</div>
+                    <div className="text-[11px] text-muted">{locationName(locations, r.locationId)}</div>
                   </div>
                 </div>
                 <div className="mt-4 flex items-center justify-between border-t border-border pt-3">
@@ -59,6 +64,11 @@ export default function ResourcesPage() {
             </Link>
           );
         })}
+        {resources.length === 0 && (
+          <div className="col-span-full rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
+            {loadingDashboard ? "Loading resources…" : "No resources yet."}
+          </div>
+        )}
       </div>
     </div>
   );
