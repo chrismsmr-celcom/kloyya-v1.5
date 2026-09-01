@@ -9,7 +9,7 @@ import { severityTone } from "@/lib/format";
 import { ChevronRight } from "lucide-react";
 
 export default function IssuesPage() {
-  const { issues } = useDemoStore();
+  const { issues, locations, resources, loadingDashboard } = useDemoStore();
 
   return (
     <div className="mx-auto max-w-5xl">
@@ -35,8 +35,8 @@ export default function IssuesPage() {
                 </div>
                 <p className="mt-1.5 text-xs text-muted">{issue.description}</p>
                 <div className="mt-2 text-[11px] text-muted/70">
-                  {locationName(issue.locationId)}
-                  {issue.resourceId ? ` · ${resourceName(issue.resourceId)}` : ""} · detected {issue.detectedAt}
+                  {locationName(locations, issue.locationId)}
+                  {issue.resourceId ? ` · ${resourceName(resources, issue.resourceId)}` : ""} · detected {issue.detectedAt}
                 </div>
               </div>
               <div className="flex shrink-0 items-center gap-3">
@@ -51,6 +51,11 @@ export default function IssuesPage() {
             </Card>
           </Link>
         ))}
+        {issues.length === 0 && (
+          <div className="rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
+            {loadingDashboard ? "Loading issues…" : "No issues recorded yet."}
+          </div>
+        )}
       </div>
     </div>
   );
