@@ -1,139 +1,67 @@
 "use client";
 
-import { useEffect, useRef, useState } from "react";
-import Link from "next/link";
-import { Bot, Loader2, Send, User } from "lucide-react";
-import { Badge } from "@/components/ui/badge";
-import { useDemoStore } from "@/lib/store";
-import { severityTone } from "@/lib/format";
+import { useState } from "react";
+import { Send, Bot, MessageSquare } from "lucide-react";
 
-const suggestions = [
-  "What's going wrong right now?",
-  "Why is delivery #4821 delayed?",
-  "What actions are waiting on my approval?",
-  "How much has Kloyya saved this week?",
-];
-
-export default function AiPage() {
-  const { chat, sendChat, chatBusy } = useDemoStore();
+export default function AIPage() {
   const [input, setInput] = useState("");
-  const bottomRef = useRef<HTMLDivElement>(null);
+  const [messages, setMessages] = useState([{ role: "ai", content: "Bonjour. Je suis Kloyya. Que souhaitez-vous analyser ?" }]);
+  const [loading, setLoading] = useState(false);
 
-  useEffect(() => {
-    bottomRef.current?.scrollIntoView({ behavior: "smooth" });
-  }, [chat, chatBusy]);
+  const handleSend = async () => {
+    if (!input.trim() || loading) return;
 
-  function submit(text?: string) {
-    const value = (text ?? input).trim();
-    if (!value) return;
-    sendChat(value);
+    const userMsg = { role: "user", content: input };
+    setMessages((prev) => [...prev, userMsg]);
     setInput("");
-  }
+    setLoading(true);
+
+    try {
+      const res = await fetch("/api/chat", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ message: input }),
+      });
+      const data = await res.json();
+      setMessages((prev) => [...prev, { role: "ai", content: data.response || "Erreur de réponse." }]);
+    } catch (error) {
+      setMessages((prev) => [...prev, { role: "ai", content: "Erreur de connexion." }]);
+    } finally {
+      setLoading(false);
+    }
+  };
 
   return (
-    <div className="mx-auto flex h-[calc(100vh-8rem)] max-w-2xl flex-col">
-      <div className="mb-4">
-        <div className="text-xs font-medium uppercase tracking-wider text-muted">Kloyya AI</div>
-        <h1 className="mt-1 text-2xl font-semibold tracking-tight">Ask Kloyya</h1>
-        <p className="mt-1 text-sm text-muted">
-          Grounded in your business, resources, work and events — every answer is explainable.
-        </p>
-      </div>
+    <div className="flex h-[calc(100vh-4rem)] flex-col p-6">
+      <h1 className="text-xl font-bold text-foreground">Demander à Kloyya</h1>
+      <p className="text-xs text-muted">Interrogez vos données réelles via Composio.</p>
 
-      <div className="panel flex-1 overflow-y-auto rounded-lg p-4">
-        <div className="flex flex-col gap-4">
-          {chat.map((m) => (
-            <div key={m.id} className={`flex gap-2.5 ${m.role === "user" ? "flex-row-reverse" : ""}`}>
-              <div
-                className={`grid h-6 w-6 shrink-0 place-items-center rounded ${
-                  m.role === "assistant" ? "bg-accent/15 text-accent" : "bg-white/10 text-foreground"
-                }`}
-              >
-                {m.role === "assistant" ? <Bot className="h-3.5 w-3.5" /> : <User className="h-3.5 w-3.5" />}
-              </div>
-              <div className={`max-w-[80%] ${m.role === "user" ? "items-end" : ""}`}>
-                <div
-                  className={`fade-up rounded-md px-3.5 py-2.5 text-sm leading-relaxed ${
-                    m.role === "assistant"
-                      ? "bg-white/[0.04] text-foreground"
-                      : "bg-accent text-white"
-                  }`}
-                >
-                  {m.text}
-                </div>
-                {m.data?.issues && (
-                  <div className="mt-2 flex flex-col gap-1.5">
-                    {m.data.issues.map((iss) => (
-                      <Link
-                        key={iss.id}
-                        href={`/issues/${iss.id}`}
-                        className="flex items-center justify-between rounded border border-border bg-white/[0.02] px-3 py-2 hover:border-accent/30"
-                      >
-                        <span className="text-xs text-foreground">{iss.title}</span>
-                        <Badge tone={severityTone(iss.severity)}>{iss.severity}</Badge>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-                {m.data?.actions && (
-                  <div className="mt-2 flex flex-col gap-1.5">
-                    {m.data.actions.map((a) => (
-                      <Link
-                        key={a.id}
-                        href="/approvals"
-                        className="flex items-center justify-between rounded border border-border bg-white/[0.02] px-3 py-2 hover:border-accent/30"
-                      >
-                        <span className="text-xs text-foreground">{a.title}</span>
-                        <Badge tone="accent">review</Badge>
-                      </Link>
-                    ))}
-                  </div>
-                )}
-              </div>
+      <div className="mt-4 flex-1 overflow-y-auto rounded-lg border border-border bg-surface p-4 space-y-4">
+        {messages.map((msg, idx) => (
+          <div key={idx} className={`flex gap-3 ${msg.role === "user" ? "flex-row-reverse" : ""}`}>
+            <div className={`flex h-8 w-8 shrink-0 items-center justify-center rounded-full ${msg.role === "ai" ? "bg-accent/10 text-accent" : "bg-white/10 text-foreground"}`}>
+              {msg.role === "ai" ? <Bot className="h-4 w-4" /> : <MessageSquare className="h-4 w-4" />}
             </div>
-          ))}
-          {chatBusy && (
-            <div className="flex items-center gap-2 text-xs text-muted">
-              <Loader2 className="h-3.5 w-3.5 animate-spin" /> Kloyya is thinking…
+            <div className={`max-w-[80%] rounded-lg px-4 py-2.5 text-sm leading-relaxed ${msg.role === "ai" ? "bg-white/5 text-foreground" : "bg-accent text-white"}`}>
+              {msg.content}
             </div>
-          )}
-          <div ref={bottomRef} />
-        </div>
-      </div>
-
-      <div className="mt-3 flex flex-wrap gap-2">
-        {suggestions.map((s) => (
-          <button
-            key={s}
-            onClick={() => submit(s)}
-            className="rounded border border-border bg-surface px-2.5 py-1.5 text-[11px] text-muted hover:border-accent/30 hover:text-foreground"
-          >
-            {s}
-          </button>
+          </div>
         ))}
       </div>
 
-      <form
-        onSubmit={(e) => {
-          e.preventDefault();
-          submit();
-        }}
-        className="mt-3 flex items-center gap-2 rounded-md border border-border bg-surface p-1.5 pl-3"
-      >
+      <div className="mt-4 flex gap-2">
         <input
           value={input}
           onChange={(e) => setInput(e.target.value)}
-          placeholder="Ask about your business…"
-          className="flex-1 bg-transparent text-sm text-foreground placeholder:text-muted focus:outline-none"
+          onKeyDown={(e) => e.key === "Enter" && handleSend()}
+          placeholder="Ex: Quel est l'état de mes livraisons aujourd'hui ?"
+          className="flex-1 rounded-md border border-border bg-surface px-4 py-3 text-sm text-foreground placeholder:text-muted focus:border-accent/50 focus:outline-none"
+          disabled={loading}
         />
-        <button
-          type="submit"
-          disabled={!input.trim()}
-          className="grid h-8 w-8 shrink-0 place-items-center rounded bg-accent text-white transition-opacity disabled:opacity-40"
-        >
-          <Send className="h-3.5 w-3.5" />
+        <button onClick={handleSend} disabled={loading} className="rounded-md bg-accent px-4 text-white hover:bg-accent/90 disabled:opacity-50">
+          <Send className="h-5 w-5" />
         </button>
-      </form>
+      </div>
     </div>
   );
 }
