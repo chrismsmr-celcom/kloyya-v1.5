@@ -1,8 +1,5 @@
 import type {
-  ActionRecord,
-  Issue,
   Location,
-  Recommendation,
   Resource,
   WorkItem,
 } from "./types";
@@ -13,6 +10,12 @@ export const organization = {
   country: "Zambia",
   plan: "V1.5 — Operations",
 };
+
+// NOTE: `locations`, `resources`, `work` et `trend` restent des données de
+// démonstration : le schema Supabase actuel (voir app/api/dashboard/route.ts)
+// n'a pas de tables `locations` / `resources` / `work_items` / `trends`.
+// `issues` et `outcomes` sont désormais chargés depuis /api/dashboard via
+// lib/store.tsx — voir DemoStoreProvider.
 
 export const locations: Location[] = [
   {
@@ -88,10 +91,7 @@ export const resources: Resource[] = [
       { label: "Fuel", value: "91%" },
       { label: "Capacity free", value: "1,240 kg" },
     ],
-    recentEvents: [
-      "work.completed — 40 min ago",
-      "vehicle.location.updated — 2 min ago",
-    ],
+    recentEvents: ["work.completed — 40 min ago", "vehicle.location.updated — 2 min ago"],
   },
   {
     id: "res_driver_mutale",
@@ -117,10 +117,7 @@ export const resources: Resource[] = [
       { label: "Runtime hours", value: "3,204" },
       { label: "Fuel consumption", value: "+22%" },
     ],
-    recentEvents: [
-      "machine.temperature.high — 1h ago",
-      "issue.detected — 1h ago",
-    ],
+    recentEvents: ["machine.temperature.high — 1h ago", "issue.detected — 1h ago"],
   },
   {
     id: "res_inv_cold",
@@ -202,159 +199,6 @@ export const work: WorkItem[] = [
   },
 ];
 
-function makeDelayAction(): ActionRecord {
-  return {
-    id: "act_reassign_4821",
-    title: "Reassign Delivery #4821 to Truck 23",
-    steps: [
-      "Find available vehicle",
-      "Validate capacity",
-      "Reassign delivery",
-      "Update schedule",
-      "Notify driver",
-      "Notify customer",
-      "Verify completion",
-    ],
-    currentStep: 0,
-    status: "pending_approval",
-    executionMode: "approval_required",
-    estimatedImpact:
-      "Delay reduced by ~31 min · customer notified automatically",
-  };
-}
-
-const recDelay: Recommendation = {
-  id: "rec_delay_4821",
-  title: "Reassign delivery to Truck 23",
-  reason:
-    "Truck 17 is delayed 31 minutes with rising engine temperature and overdue maintenance. Truck 23 is idle at the same depot with enough free capacity to take the load without affecting other scheduled stops.",
-  confidence: 0.91,
-  estimatedSavings: "31 min delay avoided",
-  action: makeDelayAction(),
-};
-
-export const issues: Issue[] = [
-  {
-    id: "iss_delay_4821",
-    title: "Delivery #4821 delayed — Truck 17 overheating",
-    description:
-      "Vehicle 17 is running 31 minutes behind schedule to Kabwe Foods. Engine temperature has climbed 18% over the last 30 minutes.",
-    severity: "high",
-    status: "open",
-    locationId: "loc_customer_9",
-    resourceId: "res_truck_17",
-    workId: "wk_100",
-    detectedAt: "8 minutes ago",
-    evidence: [
-      {
-        label: "Engine temperature increased 18% over 30 minutes",
-        confidence: 0.95,
-      },
-      {
-        label: "Previous scheduled maintenance is overdue by 3 days",
-        confidence: 0.88,
-      },
-      {
-        label: "Coolant alert received from telematics feed",
-        confidence: 0.82,
-      },
-      {
-        label: "Vehicle operating under high load on route 4821",
-        confidence: 0.77,
-      },
-    ],
-    recommendation: recDelay,
-  },
-  {
-    id: "iss_inventory_cold",
-    title: "Cold storage inventory below reorder threshold",
-    description:
-      "Ndola Warehouse B cold storage has dropped to 17%, below the 20% reorder policy line.",
-    severity: "medium",
-    status: "open",
-    locationId: "loc_wh_b",
-    resourceId: "res_inv_cold",
-    workId: "wk_101",
-    detectedAt: "22 minutes ago",
-    evidence: [
-      {
-        label: "Inventory level 17%, threshold 20%",
-        confidence: 0.99,
-      },
-      {
-        label: "Consumption rate steady over 7 days",
-        confidence: 0.7,
-      },
-    ],
-    recommendation: {
-      id: "rec_reorder_cold",
-      title: "Create reorder work order with supplier Coldline Ltd",
-      reason:
-        "Automation rule inventory.level.changed < 20% is configured to draft a reorder work order for review.",
-      confidence: 0.84,
-      estimatedSavings: "Stockout avoided",
-      action: {
-        id: "act_reorder_cold",
-        title: "Create reorder work order — Cold Storage",
-        steps: [
-          "Draft purchase request",
-          "Route to supplier",
-          "Confirm ETA",
-          "Update inventory",
-        ],
-        currentStep: 0,
-        status: "pending_approval",
-        executionMode: "approval_required",
-        estimatedImpact: "Prevents stockout in ~2 days",
-      },
-    },
-  },
-  {
-    id: "iss_gen5",
-    title: "Generator 5 overdue maintenance",
-    description:
-      "Generator 5 at Ndola Warehouse B is running hot and maintenance is overdue, risking unplanned downtime.",
-    severity: "critical",
-    status: "investigating",
-    locationId: "loc_wh_b",
-    resourceId: "res_gen_5",
-    workId: "wk_102",
-    detectedAt: "1 hour ago",
-    evidence: [
-      {
-        label: "Runtime hours exceed maintenance interval by 340 hrs",
-        confidence: 0.93,
-      },
-      {
-        label: "Fuel consumption up 22% vs. baseline",
-        confidence: 0.8,
-      },
-    ],
-    recommendation: {
-      id: "rec_gen5",
-      title: "Dispatch technician Chanda M. for emergency service",
-      reason:
-        "Chanda M. is the nearest certified technician and is currently unassigned. Delaying service risks unplanned downtime affecting cold storage.",
-      confidence: 0.87,
-      estimatedSavings: "Downtime avoided",
-      action: {
-        id: "act_gen5",
-        title: "Dispatch technician for Generator 5 service",
-        steps: [
-          "Assign technician",
-          "Order replacement part",
-          "Schedule service window",
-          "Verify repair",
-        ],
-        currentStep: 1,
-        status: "approved",
-        executionMode: "approval_required",
-        estimatedImpact: "Avoids est. $3,200 unplanned downtime",
-      },
-    },
-  },
-];
-
 export const trend = [
   { day: "Mon", resolved: 6, delayMinutes: 54 },
   { day: "Tue", resolved: 9, delayMinutes: 40 },
@@ -365,18 +209,12 @@ export const trend = [
   { day: "Sun", resolved: 5, delayMinutes: 19 },
 ];
 
-export function locationName(id: string | null | undefined): string {
-  if (!id) {
-    return "Unknown location";
-  }
-
-  return locations.find((location) => location.id === id)?.name ?? id;
+export function locationName(id?: string): string {
+  if (!id) return "Unassigned location";
+  return locations.find((l) => l.id === id)?.name ?? id;
 }
 
-export function resourceName(id: string | null | undefined): string {
-  if (!id) {
-    return "Unknown resource";
-  }
-
-  return resources.find((resource) => resource.id === id)?.name ?? id;
+export function resourceName(id?: string): string {
+  if (!id) return "Unassigned resource";
+  return resources.find((r) => r.id === id)?.name ?? id;
 }
