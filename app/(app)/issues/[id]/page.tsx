@@ -13,7 +13,7 @@ import { cn } from "@/lib/utils";
 export default function IssueDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { issues, approveAction, rejectAction } = useDemoStore();
+  const { issues, locations, resources, approveAction, rejectAction } = useDemoStore();
   const issue = issues.find((i) => i.id === params.id);
 
   if (!issue) {
@@ -42,8 +42,8 @@ export default function IssueDetailPage() {
         <Badge tone={severityTone(issue.severity)}>{issue.severity}</Badge>
         <Badge tone={issue.status === "resolved" ? "good" : "neutral"}>{issue.status.replace("_", " ")}</Badge>
         <span className="text-[11px] text-muted">
-          {locationName(issue.locationId)}
-          {issue.resourceId ? ` · ${resourceName(issue.resourceId)}` : ""} · detected {issue.detectedAt}
+          {locationName(locations, issue.locationId)}
+          {issue.resourceId ? ` · ${resourceName(resources, issue.resourceId)}` : ""} · detected {issue.detectedAt}
         </span>
       </div>
 
@@ -61,6 +61,7 @@ export default function IssueDetailPage() {
               </span>
             </div>
           ))}
+          {issue.evidence.length === 0 && <p className="text-xs text-muted">No evidence recorded.</p>}
         </div>
       </Card>
 
