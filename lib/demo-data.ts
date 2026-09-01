@@ -209,12 +209,20 @@ export const trend = [
   { day: "Sun", resolved: 5, delayMinutes: 19 },
 ];
 
-export function locationName(id?: string): string {
+
+export function locationName(
+  locations: { id: string; name: string }[],
+  id?: string,
+): string {
   if (!id) return "Unassigned location";
   return locations.find((l) => l.id === id)?.name ?? id;
 }
 
-export function resourceName(id?: string): string {
+
+export function resourceName(
+  resources: { id: string; name: string }[],
+  id?: string,
+): string {
   if (!id) return "Unassigned resource";
   return resources.find((r) => r.id === id)?.name ?? id;
 }
