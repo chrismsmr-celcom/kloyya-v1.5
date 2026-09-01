@@ -334,10 +334,6 @@ export default function OnboardingPage() {
 
       setOnboardingResult(result);
 
-      /*
-       * Keep the existing application store synchronized.
-       * The API call above is the source of truth.
-       */
       await completeOnboarding({
         name: businessName,
         industry: effectiveIndustry,
@@ -367,28 +363,31 @@ export default function OnboardingPage() {
     }
 
     /*
-     * The existing backend supports these Composio
-     * toolkits. Other source types remain visible but
-     * are not falsely reported as connected.
+     * Mappage des IDs de l'UI vers les noms de toolkits officiels de Composio.
+     * Composio supporte nativement tous ces outils.
      */
-    const toolkitMap: Record<
-      string,
-      string
-    > = {
+    const toolkitMap: Record<string, string> = {
       gmail: "gmail",
       slack: "slack",
+      whatsapp: "whatsapp",
       googlecalendar: "googlecalendar",
       googledrive: "googledrive",
+      googlesheets: "googlesheets",
+      notion: "notion",
+      jira: "jira",
+      linear: "linear",
+      trello: "trello",
+      asana: "asana",
+      hubspot: "hubspot",
+      analytics: "googlesheets", // Fallback pour l'exemple
     };
 
-    const toolkit =
-      toolkitMap[id.toLowerCase()];
+    const toolkit = toolkitMap[id.toLowerCase()];
 
     if (!toolkit) {
       setConnectionErrors((current) => ({
         ...current,
-        [id]:
-          "This integration is not connected to the backend yet.",
+        [id]: "This integration is not connected to the backend yet.",
       }));
 
       setConnectionStatus((current) => ({
@@ -437,12 +436,7 @@ export default function OnboardingPage() {
         );
       }
 
-      /*
-       * Composio owns the OAuth connection flow.
-       * We redirect to the real authorization URL.
-       */
-      window.location.href =
-        data.redirectUrl;
+      window.location.href = data.redirectUrl;
     } catch (error) {
       const message =
         error instanceof Error
@@ -506,8 +500,7 @@ export default function OnboardingPage() {
               businessName,
               industry: effectiveIndustry,
               country,
-              connectedSources:
-                connectedLabels,
+              connectedSources: connectedLabels,
             },
           }),
         },
@@ -517,8 +510,7 @@ export default function OnboardingPage() {
 
       if (!response.ok || !data.ok) {
         throw new Error(
-          data.error ??
-            "Kloyya analysis failed.",
+          data.error ?? "Kloyya analysis failed.",
         );
       }
 
@@ -559,17 +551,10 @@ export default function OnboardingPage() {
     }
 
     await runAnalysis();
-
-    /*
-     * Do not advance automatically.
-     * The user must see that the real backend
-     * analysis succeeded.
-     */
   }
 
   const analysisIssue =
-    analysis?.analysis?.issue ??
-    analysis?.issue;
+    analysis?.analysis?.issue ?? analysis?.issue;
 
   const analysisRecommendation =
     analysis?.analysis?.recommendation ??
@@ -603,8 +588,7 @@ export default function OnboardingPage() {
                 )}
               />
 
-              {index <
-                activeSteps.length - 1 && (
+              {index < activeSteps.length - 1 && (
                 <div className="h-px w-4 bg-white/10" />
               )}
             </div>
@@ -623,36 +607,24 @@ export default function OnboardingPage() {
         <AnimatePresence mode="wait">
           {currentStepKey === "business" && (
             <Step key="business">
-              <Eyebrow>
-                Let&apos;s set up Kloyya
-              </Eyebrow>
-
-              <Title>
-                What should we call your business?
-              </Title>
-
+              <Eyebrow>Let&apos;s set up Kloyya</Eyebrow>
+              <Title>What should we call your business?</Title>
               <input
                 autoFocus
                 value={name}
-                onChange={(event) =>
-                  setName(event.target.value)
-                }
+                onChange={(event) => setName(event.target.value)}
                 placeholder="e.g. Acme Logistics"
                 className="mt-5 w-full rounded-md border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/40 focus:outline-none"
               />
-
               <p className="mt-6 text-xs font-medium text-muted">
                 What kind of operation is it?
               </p>
-
               <div className="mt-2.5 flex flex-wrap gap-2">
                 {INDUSTRIES.map((item) => (
                   <button
                     key={item}
                     type="button"
-                    onClick={() =>
-                      setIndustry(item)
-                    }
+                    onClick={() => setIndustry(item)}
                     className={cn(
                       "rounded-md border px-3 py-1.5 text-xs transition-colors",
                       industry === item
@@ -664,26 +636,18 @@ export default function OnboardingPage() {
                   </button>
                 ))}
               </div>
-
               {industry === "Other" && (
                 <input
                   autoFocus
                   value={customIndustry}
-                  onChange={(event) =>
-                    setCustomIndustry(
-                      event.target.value,
-                    )
-                  }
+                  onChange={(event) => setCustomIndustry(event.target.value)}
                   placeholder="Write in what you do…"
                   className="mt-2.5 w-full rounded-md border border-border bg-surface px-3.5 py-2.5 text-sm text-foreground placeholder:text-muted focus:border-accent/40 focus:outline-none"
                 />
               )}
-
               <NextButton
                 disabled={
-                  !industry ||
-                  (industry === "Other" &&
-                    !customIndustry.trim())
+                  !industry || (industry === "Other" && !customIndustry.trim())
                 }
                 onClick={goNext}
               />
@@ -692,81 +656,48 @@ export default function OnboardingPage() {
 
           {currentStepKey === "locations" && (
             <Step key="locations">
-              <Eyebrow>
-                Business location
-              </Eyebrow>
-
-              <Title>
-                Where is {businessName} based?
-              </Title>
-
+              <Eyebrow>Business location</Eyebrow>
+              <Title>Where is {businessName} based?</Title>
               <p className="mt-2 text-sm text-muted">
-                This information is stored as part of
-                your onboarding context. Kloyya will
-                not claim to have discovered locations
-                until a real location integration is
-                connected.
+                This information is stored as part of your onboarding context.
               </p>
-
               {guessedCountry && (
                 <button
                   type="button"
-                  onClick={() =>
-                    selectCountry(
-                      guessedCountry,
-                    )
-                  }
+                  onClick={() => selectCountry(guessedCountry)}
                   className="mt-4 flex w-full items-center justify-between rounded-md border border-accent/40 bg-accent/[0.06] p-3 text-left"
                 >
                   <span className="flex items-center gap-2.5 text-xs">
                     <MapPin className="h-3.5 w-3.5 text-accent" />
-
                     <span className="text-foreground">
                       Looks like you&apos;re in{" "}
-                      <span className="font-medium">
-                        {guessedCountry}
-                      </span>
+                      <span className="font-medium">{guessedCountry}</span>
                     </span>
                   </span>
-
-                  <span className="text-[11px] font-medium text-accent">
-                    Use this
-                  </span>
+                  <span className="text-[11px] font-medium text-accent">Use this</span>
                 </button>
               )}
-
               <div className="relative mt-4">
                 <Search className="pointer-events-none absolute left-3 top-1/2 h-3.5 w-3.5 -translate-y-1/2 text-muted" />
-
                 <input
                   value={countryQuery}
-                  onChange={(event) =>
-                    setCountryQuery(
-                      event.target.value,
-                    )
-                  }
+                  onChange={(event) => setCountryQuery(event.target.value)}
                   placeholder="Search for your country…"
                   className="w-full rounded-md border border-border bg-surface py-2.5 pl-9 pr-3 text-sm text-foreground placeholder:text-muted focus:border-accent/40 focus:outline-none"
                 />
               </div>
-
               <div className="mt-2 flex flex-col gap-1.5">
-                {filteredCountries.map(
-                  (item) => (
-                    <button
-                      key={item}
-                      type="button"
-                      onClick={() =>
-                        selectCountry(item)
-                      }
-                      className="flex items-center justify-between rounded-md border border-border bg-surface px-3 py-2 text-left text-xs text-muted hover:border-accent/30 hover:text-foreground"
-                    >
-                      {item}
-                    </button>
-                  ),
-                )}
+                {filteredCountries.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => selectCountry(item)}
+                    className="flex items-center justify-between rounded-md border border-border bg-surface px-3 py-2 text-left text-xs text-muted hover:border-accent/30 hover:text-foreground"
+                  >
+                    {item}
+                  </button>
+                ))}
               </div>
-
               <button
                 type="button"
                 onClick={goNext}
@@ -779,39 +710,19 @@ export default function OnboardingPage() {
 
           {currentStepKey === "connect" && (
             <Step key="connect">
-              <Eyebrow>
-                Connect your world
-              </Eyebrow>
-
-              <Title>
-                What should Kloyya be watching?
-              </Title>
-
+              <Eyebrow>Connect your world</Eyebrow>
+              <Title>What should Kloyya be watching?</Title>
               <p className="mt-2 text-sm text-muted">
-                Connections use the real Composio
-                authorization flow. Kloyya will not mark
-                an integration connected until the
-                provider authorization actually starts.
+                Connections use the real Composio authorization flow.
               </p>
-
               <div className="mt-5 grid grid-cols-2 gap-2.5">
                 {sourceIds.map((id) => {
-                  const source =
-                    SOURCE_LIBRARY[id];
+                  const source = SOURCE_LIBRARY[id];
+                  if (!source) return null;
 
-                  if (!source) {
-                    return null;
-                  }
-
-                  const selected =
-                    sources[id];
-
-                  const status =
-                    connectionStatus[id] ??
-                    "idle";
-
-                  const error =
-                    connectionErrors[id];
+                  const selected = sources[id];
+                  const status = connectionStatus[id] ?? "idle";
+                  const error = connectionErrors[id];
 
                   return (
                     <div
@@ -827,51 +738,30 @@ export default function OnboardingPage() {
                         <div
                           className={cn(
                             "grid h-7 w-7 shrink-0 place-items-center rounded",
-                            selected
-                              ? "bg-accent/15 text-accent"
-                              : "bg-white/[0.05] text-muted",
+                            selected ? "bg-accent/15 text-accent" : "bg-white/[0.05] text-muted",
                           )}
                         >
                           <source.icon className="h-3.5 w-3.5" />
                         </div>
-
-                        <span
-                          className={cn(
-                            "text-xs font-medium",
-                            selected
-                              ? "text-foreground"
-                              : "text-muted",
-                          )}
-                        >
+                        <span className={cn("text-xs font-medium", selected ? "text-foreground" : "text-muted")}>
                           {source.label}
                         </span>
                       </div>
-
                       <button
                         type="button"
                         onClick={() => {
-                          setSources(
-                            (current) => ({
-                              ...current,
-                              [id]: true,
-                            }),
-                          );
-
+                          setSources((current) => ({ ...current, [id]: true }));
                           void connectSource(id);
                         }}
-                        disabled={
-                          status === "connecting"
-                        }
+                        disabled={status === "connecting"}
                         className="mt-3 flex w-full items-center justify-center gap-2 rounded border border-border px-2.5 py-1.5 text-[11px] font-medium text-muted hover:text-foreground disabled:cursor-not-allowed disabled:opacity-50"
                       >
-                        {status ===
-                        "connecting" ? (
+                        {status === "connecting" ? (
                           <>
                             <Loader2 className="h-3 w-3 animate-spin" />
                             Connecting…
                           </>
-                        ) : status ===
-                          "connected" ? (
+                        ) : status === "connected" ? (
                           <>
                             <CheckCircle2 className="h-3 w-3 text-good" />
                             Connected
@@ -880,58 +770,33 @@ export default function OnboardingPage() {
                           "Connect"
                         )}
                       </button>
-
                       {error && (
-                        <p className="mt-2 text-[10px] leading-relaxed text-red-400">
-                          {error}
-                        </p>
+                        <p className="mt-2 text-[10px] leading-relaxed text-red-400">{error}</p>
                       )}
                     </div>
                   );
                 })}
               </div>
-
-              <p className="mt-3 text-[11px] text-muted">
-                {connectedSourceIds.length} selected
-              </p>
-
-              <NextButton
-                onClick={goNext}
-                label="Continue"
-              />
+              <p className="mt-3 text-[11px] text-muted">{connectedSourceIds.length} selected</p>
+              <NextButton onClick={goNext} label="Continue" />
             </Step>
           )}
 
           {currentStepKey === "describe" && (
             <Step key="describe">
-              <Eyebrow>
-                Tell Kloyya about it
-              </Eyebrow>
-
-              <Title>
-                Describe your business in your own
-                words.
-              </Title>
-
+              <Eyebrow>Tell Kloyya about it</Eyebrow>
+              <Title>Describe your business in your own words.</Title>
               <p className="mt-2 text-sm text-muted">
-                Kloyya will send this information to the
-                real analysis backend. It will not invent
-                an issue from a local template.
+                Kloyya will send this information to the real analysis backend.
               </p>
-
               <textarea
                 autoFocus
                 value={description}
-                onChange={(event) =>
-                  setDescription(
-                    event.target.value,
-                  )
-                }
+                onChange={(event) => setDescription(event.target.value)}
                 rows={6}
                 placeholder="What do you do, who are your customers, and what operational problem is currently costing you time or money?"
                 className="mt-4 w-full resize-none rounded-md border border-border bg-surface px-3.5 py-3 text-sm leading-relaxed text-foreground placeholder:text-muted focus:border-accent/40 focus:outline-none"
               />
-
               <div className="mt-2 flex items-center justify-between text-[11px] text-muted">
                 <span>
                   {description.trim()
@@ -939,229 +804,137 @@ export default function OnboardingPage() {
                     : "Required for the first real analysis"}
                 </span>
               </div>
-
               {onboardingError && (
                 <div className="mt-3 rounded-md border border-red-500/20 bg-red-500/[0.05] px-3 py-2.5 text-xs text-red-400">
                   {onboardingError}
                 </div>
               )}
-
               <NextButton
-                disabled={
-                  !description.trim() ||
-                  savingOnboarding
-                }
-                onClick={
-                  continueAfterDescription
-                }
-                label={
-                  savingOnboarding
-                    ? "Creating your workspace…"
-                    : "Create workspace"
-                }
+                disabled={!description.trim() || savingOnboarding}
+                onClick={continueAfterDescription}
+                label={savingOnboarding ? "Creating your workspace…" : "Create workspace"}
               />
             </Step>
           )}
 
           {currentStepKey === "learn" && (
             <Step key="learn">
-              <Eyebrow>
-                Real Kloyya analysis
-              </Eyebrow>
-
-              <Title>
-                Let Kloyya analyze what you shared.
-              </Title>
-
+              <Eyebrow>Real Kloyya analysis</Eyebrow>
+              <Title>Let Kloyya analyze what you shared.</Title>
               <p className="mt-2 text-sm text-muted">
-                This calls the backend AI analysis route
-                and persists the resulting issue when the
-                organization exists.
+                This calls the backend AI analysis route.
               </p>
-
               <div className="mt-5 rounded-md border border-border bg-surface p-4">
                 <div className="flex items-center gap-2">
-                  {analysisStatus ===
-                    "completed" ? (
+                  {analysisStatus === "completed" ? (
                     <CheckCircle2 className="h-4 w-4 text-good" />
-                  ) : analysisStatus ===
-                    "running" ? (
+                  ) : analysisStatus === "running" ? (
                     <Loader2 className="h-4 w-4 animate-spin text-accent" />
                   ) : (
                     <CircleDashed className="h-4 w-4 text-muted" />
                   )}
-
                   <span className="text-sm font-medium text-foreground">
-                    {analysisStatus ===
-                    "completed"
+                    {analysisStatus === "completed"
                       ? "Analysis completed"
-                      : analysisStatus ===
-                          "running"
+                      : analysisStatus === "running"
                         ? "Kloyya is analyzing…"
                         : "Analysis ready"}
                   </span>
                 </div>
-
                 {analysisIssue && (
                   <div className="mt-4 rounded border border-border bg-white/[0.02] p-3">
                     <div className="flex items-center gap-2">
                       {analysisIssue.severity && (
                         <Badge
                           tone={
-                            analysisIssue.severity ===
-                            "critical"
+                            analysisIssue.severity === "critical"
                               ? "critical"
-                              : analysisIssue.severity ===
-                                  "high"
+                              : analysisIssue.severity === "high"
                                 ? "bad"
                                 : "warn"
                           }
                         >
-                          {
-                            analysisIssue.severity
-                          }
+                          {analysisIssue.severity}
                         </Badge>
                       )}
-
-                      <span className="text-xs font-medium text-foreground">
-                        {analysisIssue.title}
-                      </span>
+                      <span className="text-xs font-medium text-foreground">{analysisIssue.title}</span>
                     </div>
-
                     {analysisIssue.description && (
                       <p className="mt-2 text-[11px] leading-relaxed text-muted">
-                        {
-                          analysisIssue.description
-                        }
+                        {analysisIssue.description}
                       </p>
                     )}
                   </div>
                 )}
-
                 {analysisRecommendation && (
                   <div className="mt-3 rounded border border-accent/20 bg-accent/[0.04] p-3">
-                    <div className="text-[11px] font-medium text-accent">
-                      Recommendation
-                    </div>
-
+                    <div className="text-[11px] font-medium text-accent">Recommendation</div>
                     <div className="mt-1 text-xs font-medium text-foreground">
-                      {
-                        analysisRecommendation.title
-                      }
+                      {analysisRecommendation.title}
                     </div>
-
                     {analysisRecommendation.reason && (
                       <p className="mt-1 text-[11px] leading-relaxed text-muted">
-                        {
-                          analysisRecommendation.reason
-                        }
+                        {analysisRecommendation.reason}
                       </p>
                     )}
                   </div>
                 )}
-
                 {analysisError && (
                   <div className="mt-3 rounded-md border border-red-500/20 bg-red-500/[0.05] px-3 py-2.5 text-xs text-red-400">
                     {analysisError}
                   </div>
                 )}
               </div>
-
-              {analysisStatus !==
-                "completed" && (
+              {analysisStatus !== "completed" && (
                 <NextButton
-                  disabled={
-                    analysisStatus ===
-                    "running"
-                  }
-                  onClick={
-                    continueFromLearn
-                  }
-                  label={
-                    analysisStatus ===
-                    "running"
-                      ? "Analyzing…"
-                      : "Run real analysis"
-                  }
+                  disabled={analysisStatus === "running"}
+                  onClick={continueFromLearn}
+                  label={analysisStatus === "running" ? "Analyzing…" : "Run real analysis"}
                 />
               )}
-
-              {analysisStatus ===
-                "completed" && (
-                <NextButton
-                  onClick={goNext}
-                  label="Continue"
-                />
-              )}
+              {analysisStatus === "completed" && <NextButton onClick={goNext} label="Continue" />}
             </Step>
           )}
 
           {currentStepKey === "first-save" && (
             <Step key="first-save">
-              <Eyebrow>
-                First result
-              </Eyebrow>
-
-              <Title>
-                Kloyya found a real signal.
-              </Title>
-
+              <Eyebrow>First result</Eyebrow>
+              <Title>Kloyya found a real signal.</Title>
               <p className="mt-2 text-sm text-muted">
-                This result came from the backend
-                analysis. No local issue template was used.
+                This result came from the backend analysis.
               </p>
-
               {analysisIssue ? (
                 <div className="mt-5 rounded-md border border-border bg-surface p-4">
                   <div className="flex items-center gap-2">
                     {analysisIssue.severity && (
                       <Badge
                         tone={
-                          analysisIssue.severity ===
-                          "critical"
+                          analysisIssue.severity === "critical"
                             ? "critical"
-                            : analysisIssue.severity ===
-                                "high"
+                            : analysisIssue.severity === "high"
                               ? "bad"
                               : "warn"
                         }
                       >
-                        {
-                          analysisIssue.severity
-                        }
+                        {analysisIssue.severity}
                       </Badge>
                     )}
-
-                    <span className="text-sm font-medium text-foreground">
-                      {analysisIssue.title}
-                    </span>
+                    <span className="text-sm font-medium text-foreground">{analysisIssue.title}</span>
                   </div>
-
                   {analysisIssue.description && (
-                    <p className="mt-2 text-xs leading-relaxed text-muted">
-                      {
-                        analysisIssue.description
-                      }
-                    </p>
+                    <p className="mt-2 text-xs leading-relaxed text-muted">{analysisIssue.description}</p>
                   )}
-
                   {analysisRecommendation && (
                     <div className="mt-4 rounded border border-border bg-white/[0.02] p-3">
                       <div className="flex items-center gap-2">
                         <ShieldCheck className="h-3.5 w-3.5 text-accent" />
-
                         <span className="text-xs font-medium text-foreground">
-                          {
-                            analysisRecommendation.title
-                          }
+                          {analysisRecommendation.title}
                         </span>
                       </div>
-
                       {analysisRecommendation.reason && (
                         <p className="mt-1.5 text-[11px] leading-relaxed text-muted">
-                          {
-                            analysisRecommendation.reason
-                          }
+                          {analysisRecommendation.reason}
                         </p>
                       )}
                     </div>
@@ -1169,68 +942,38 @@ export default function OnboardingPage() {
                 </div>
               ) : (
                 <div className="mt-5 rounded-md border border-red-500/20 bg-red-500/[0.05] p-4 text-xs text-red-400">
-                  No persisted analysis result was
-                  returned by the backend.
+                  No persisted analysis result was returned by the backend.
                 </div>
               )}
-
-              <NextButton
-                disabled={!analysisIssue}
-                onClick={goNext}
-                label="Continue"
-              />
+              <NextButton disabled={!analysisIssue} onClick={goNext} label="Continue" />
             </Step>
           )}
 
           {currentStepKey === "control" && (
             <Step key="control">
-              <Eyebrow>
-                Stay in control
-              </Eyebrow>
-
-              <Title>
-                What can Kloyya do without asking?
-              </Title>
-
+              <Eyebrow>Stay in control</Eyebrow>
+              <Title>What can Kloyya do without asking?</Title>
               <p className="mt-2 text-sm text-muted">
-                These permissions determine the autonomy
-                level saved with your organization.
+                These permissions determine the autonomy level saved with your organization.
               </p>
-
               <div className="mt-3 flex gap-2">
                 <button
                   type="button"
                   onClick={() =>
                     setPermissions(
-                      Object.fromEntries(
-                        PERMISSIONS.map(
-                          (permission) => [
-                            permission.id,
-                            true,
-                          ],
-                        ),
-                      ),
+                      Object.fromEntries(PERMISSIONS.map((permission) => [permission.id, true])),
                     )
                   }
                   className="rounded-md border border-border bg-surface px-2.5 py-1 text-[11px] text-muted hover:text-foreground"
                 >
                   Select all
                 </button>
-
                 <button
                   type="button"
                   onClick={() =>
                     setPermissions(
                       Object.fromEntries(
-                        PERMISSIONS.map(
-                          (
-                            permission,
-                            index,
-                          ) => [
-                            permission.id,
-                            index < 2,
-                          ],
-                        ),
+                        PERMISSIONS.map((permission, index) => [permission.id, index < 2]),
                       ),
                     )
                   }
@@ -1239,194 +982,97 @@ export default function OnboardingPage() {
                   Just the essentials
                 </button>
               </div>
-
               <div className="mt-3 flex flex-col gap-2">
-                {PERMISSIONS.map(
-                  (permission) => {
-                    const selected =
-                      permissions[
-                        permission.id
-                      ];
-
-                    return (
-                      <button
-                        key={
-                          permission.id
-                        }
-                        type="button"
-                        onClick={() =>
-                          togglePermission(
-                            permission.id,
-                          )
-                        }
+                {PERMISSIONS.map((permission) => {
+                  const selected = permissions[permission.id];
+                  return (
+                    <button
+                      key={permission.id}
+                      type="button"
+                      onClick={() => togglePermission(permission.id)}
+                      className={cn(
+                        "flex items-center justify-between rounded-md border p-3.5 text-left transition-colors",
+                        selected
+                          ? "border-accent/40 bg-accent/[0.06]"
+                          : "border-border bg-surface hover:bg-white/[0.03]",
+                      )}
+                    >
+                      <div>
+                        <div className="text-xs font-medium text-foreground">{permission.label}</div>
+                        <div className="mt-0.5 text-[11px] text-muted">{permission.desc}</div>
+                      </div>
+                      <div
                         className={cn(
-                          "flex items-center justify-between rounded-md border p-3.5 text-left transition-colors",
-                          selected
-                            ? "border-accent/40 bg-accent/[0.06]"
-                            : "border-border bg-surface hover:bg-white/[0.03]",
+                          "grid h-4 w-4 shrink-0 place-items-center rounded border",
+                          selected ? "border-accent bg-accent" : "border-white/20",
                         )}
                       >
-                        <div>
-                          <div className="text-xs font-medium text-foreground">
-                            {
-                              permission.label
-                            }
-                          </div>
-
-                          <div className="mt-0.5 text-[11px] text-muted">
-                            {
-                              permission.desc
-                            }
-                          </div>
-                        </div>
-
-                        <div
-                          className={cn(
-                            "grid h-4 w-4 shrink-0 place-items-center rounded border",
-                            selected
-                              ? "border-accent bg-accent"
-                              : "border-white/20",
-                          )}
-                        >
-                          {selected && (
-                            <CheckCircle2 className="h-3 w-3 text-white" />
-                          )}
-                        </div>
-                      </button>
-                    );
-                  },
-                )}
+                        {selected && <CheckCircle2 className="h-3 w-3 text-white" />}
+                      </div>
+                    </button>
+                  );
+                })}
               </div>
-
               <div className="mt-3 rounded-md border border-border bg-white/[0.02] px-3.5 py-2.5 text-[11px] text-muted">
-                {selectedPermissionCount} of{" "}
-                {PERMISSIONS.length} selected → Level{" "}
-                {resolvedLevel} ·{" "}
-                <span className="text-foreground">
-                  {
-                    LEVEL_LABEL[
-                      resolvedLevel
-                    ].title
-                  }
-                </span>{" "}
-                —{" "}
-                {
-                  LEVEL_LABEL[
-                    resolvedLevel
-                  ].desc
-                }
+                {selectedPermissionCount} of {PERMISSIONS.length} selected → Level {resolvedLevel} ·{" "}
+                <span className="text-foreground">{LEVEL_LABEL[resolvedLevel].title}</span> —{" "}
+                {LEVEL_LABEL[resolvedLevel].desc}
               </div>
-
-              <NextButton
-                onClick={goNext}
-                label="Continue"
-              />
+              <NextButton onClick={goNext} label="Continue" />
             </Step>
           )}
 
           {currentStepKey === "plan" && (
             <Step key="plan">
-              <Eyebrow>
-                Choose your plan
-              </Eyebrow>
-
-              <Title>
-                Choose the plan you&apos;ll use after
-                your trial.
-              </Title>
-
+              <Eyebrow>Choose your plan</Eyebrow>
+              <Title>Choose the plan you&apos;ll use after your trial.</Title>
               <p className="mt-2 text-sm text-muted">
-                Billing is intentionally not simulated
-                here. No card is collected or "verified"
-                by the frontend. A real billing provider
-                must be connected before Kloyya claims a
-                payment method exists.
+                Billing is intentionally not simulated here.
               </p>
-
               <div className="mt-5 flex items-center gap-3">
                 <div className="relative inline-flex rounded-md border border-border bg-surface p-1">
-                  {(
-                    ["monthly", "yearly"] as const
-                  ).map((cycle) => (
+                  {(["monthly", "yearly"] as const).map((cycle) => (
                     <button
                       key={cycle}
                       type="button"
-                      onClick={() =>
-                        setBillingCycle(
-                          cycle,
-                        )
-                      }
+                      onClick={() => setBillingCycle(cycle)}
                       className="relative rounded px-3 py-1.5 text-xs font-medium"
                     >
-                      {billingCycle ===
-                        cycle && (
+                      {billingCycle === cycle && (
                         <motion.div
                           layoutId="billing-pill"
                           className="absolute inset-0 rounded bg-accent"
-                          transition={{
-                            type: "spring",
-                            stiffness: 500,
-                            damping: 32,
-                          }}
+                          transition={{ type: "spring", stiffness: 500, damping: 32 }}
                         />
                       )}
-
-                      <span
-                        className={cn(
-                          "relative z-10",
-                          billingCycle ===
-                            cycle
-                            ? "text-white"
-                            : "text-muted",
-                        )}
-                      >
-                        {cycle ===
-                        "monthly"
-                          ? "Monthly"
-                          : "Yearly"}
+                      <span className={cn("relative z-10", billingCycle === cycle ? "text-white" : "text-muted")}>
+                        {cycle === "monthly" ? "Monthly" : "Yearly"}
                       </span>
                     </button>
                   ))}
                 </div>
-
-                {billingCycle ===
-                  "yearly" && (
-                  <span className="text-[11px] font-medium text-good">
-                    Save up to 24%
-                  </span>
+                {billingCycle === "yearly" && (
+                  <span className="text-[11px] font-medium text-good">Save up to 24%</span>
                 )}
               </div>
-
               <div className="mt-4 grid grid-cols-2 gap-2.5 md:grid-cols-4">
                 {PLANS.map((plan) => {
-                  const selected =
-                    plan.id ===
-                    selectedPlanId;
-
+                  const selected = plan.id === selectedPlanId;
                   const price =
                     plan.monthly === null
                       ? null
-                      : billingCycle ===
-                          "yearly"
-                        ? yearlyMonthlyPrice(
-                            plan,
-                          )
+                      : billingCycle === "yearly"
+                        ? yearlyMonthlyPrice(plan)
                         : plan.monthly;
 
                   return (
                     <button
                       key={plan.id}
                       type="button"
-                      onClick={() =>
-                        setSelectedPlanId(
-                          plan.id,
-                        )
-                      }
+                      onClick={() => setSelectedPlanId(plan.id)}
                       className={cn(
                         "flex flex-col rounded-md border p-3.5 text-left transition-colors",
-                        selected
-                          ? "border-accent/50 bg-accent/[0.06]"
-                          : "border-border bg-surface hover:bg-white/[0.03]",
+                        selected ? "border-accent/50 bg-accent/[0.06]" : "border-border bg-surface hover:bg-white/[0.03]",
                       )}
                     >
                       {plan.badge ? (
@@ -1436,80 +1082,41 @@ export default function OnboardingPage() {
                       ) : (
                         <div className="mb-2 h-[18px]" />
                       )}
-
-                      <div className="text-xs font-medium text-foreground">
-                        {plan.name}
-                      </div>
-
+                      <div className="text-xs font-medium text-foreground">{plan.name}</div>
                       <div className="mt-1.5 flex items-baseline gap-1">
                         {price === null ? (
-                          <span className="text-lg font-semibold text-foreground">
-                            Custom
-                          </span>
+                          <span className="text-lg font-semibold text-foreground">Custom</span>
                         ) : (
                           <>
-                            <span className="text-lg font-semibold tabular-nums text-foreground">
-                              ${price}
-                            </span>
-
-                            <span className="text-[10px] text-muted">
-                              /mo
-                            </span>
+                            <span className="text-lg font-semibold tabular-nums text-foreground">${price}</span>
+                            <span className="text-[10px] text-muted">/mo</span>
                           </>
                         )}
                       </div>
-
-                      {price !== null &&
-                        billingCycle ===
-                          "yearly" && (
-                          <div className="text-[10px] text-muted">
-                            billed $
-                            {
-                              plan.yearly
-                            }
-                            /yr
-                          </div>
-                        )}
-
+                      {price !== null && billingCycle === "yearly" && (
+                        <div className="text-[10px] text-muted">billed ${plan.yearly}/yr</div>
+                      )}
                       <ul className="mt-2.5 flex flex-1 flex-col gap-1 text-[10.5px] leading-relaxed text-muted">
-                        {plan.features.map(
-                          (feature) => (
-                            <li
-                              key={
-                                feature
-                              }
-                              className="flex items-start gap-1.5"
-                            >
-                              <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-good" />
-                              {
-                                feature
-                              }
-                            </li>
-                          ),
-                        )}
+                        {plan.features.map((feature) => (
+                          <li key={feature} className="flex items-start gap-1.5">
+                            <CheckCircle2 className="mt-0.5 h-3 w-3 shrink-0 text-good" />
+                            {feature}
+                          </li>
+                        ))}
                       </ul>
-
                       <div
                         className={cn(
                           "mt-3 rounded px-2.5 py-1.5 text-center text-[11px] font-medium",
-                          selected
-                            ? "bg-accent text-white"
-                            : "border border-border text-muted",
+                          selected ? "bg-accent text-white" : "border border-border text-muted",
                         )}
                       >
-                        {selected
-                          ? "Selected"
-                          : "Choose"}
+                        {selected ? "Selected" : "Choose"}
                       </div>
                     </button>
                   );
                 })}
               </div>
-
-              <NextButton
-                onClick={goNext}
-                label={`Continue with ${selectedPlan.name}`}
-              />
+              <NextButton onClick={goNext} label={`Continue with ${selectedPlan.name}`} />
             </Step>
           )}
 
@@ -1517,61 +1124,30 @@ export default function OnboardingPage() {
             <Step key="ready">
               <div className="relative">
                 <Confetti />
-
                 <div className="grid h-11 w-11 place-items-center rounded-md bg-good/15 text-good">
                   <Sparkle className="h-5 w-5" />
                 </div>
               </div>
-
-              <Title className="mt-4">
-                {businessName} is live on Kloyya.
-              </Title>
-
+              <Title className="mt-4">{businessName} is live on Kloyya.</Title>
               <p className="mt-2 text-sm text-muted">
-                Your organization has been created in
-                Supabase and Kloyya has performed a real
-                backend analysis of the information you
-                provided.
+                Your organization has been created in Supabase and Kloyya has performed a real backend analysis.
               </p>
-
               <div className="mt-4 flex flex-col gap-2">
                 <div className="rounded-md border border-border bg-surface px-3.5 py-2.5 text-[11px] text-muted">
                   Organization ID:{" "}
-                  <span className="font-mono text-foreground">
-                    {
-                      onboardingResult?.organizationId
-                    }
-                  </span>
+                  <span className="font-mono text-foreground">{onboardingResult?.organizationId}</span>
                 </div>
-
                 <div className="rounded-md border border-border bg-surface px-3.5 py-2.5 text-[11px] text-muted">
-                  Autonomy: Level{" "}
-                  <span className="text-foreground">
-                    {resolvedLevel}
-                  </span>{" "}
-                  ·{" "}
-                  {
-                    LEVEL_LABEL[
-                      resolvedLevel
-                    ].title
-                  }
+                  Autonomy: Level <span className="text-foreground">{resolvedLevel}</span> ·{" "}
+                  {LEVEL_LABEL[resolvedLevel].title}
                 </div>
-
                 <div className="rounded-md border border-border bg-surface px-3.5 py-2.5 text-[11px] text-muted">
-                  Analysis:{" "}
-                  <span className="text-good">
-                    persisted
-                  </span>
+                  Analysis: <span className="text-good">persisted</span>
                 </div>
               </div>
-
               <button
                 type="button"
-                onClick={() =>
-                  router.push(
-                    "/command-center",
-                  )
-                }
+                onClick={() => router.push("/command-center")}
                 className="mt-6 flex w-full items-center justify-center gap-2 rounded-md bg-accent px-4 py-2.5 text-sm font-medium text-white hover:bg-accent/85"
               >
                 Enter Command Center
