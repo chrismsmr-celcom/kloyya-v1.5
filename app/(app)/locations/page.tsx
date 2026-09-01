@@ -1,7 +1,9 @@
+"use client";
+
 import Link from "next/link";
 import { Card } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
-import { locations } from "@/lib/demo-data";
+import { useDemoStore } from "@/lib/store";
 import { MapPin } from "lucide-react";
 
 const typeLabel: Record<string, string> = {
@@ -12,6 +14,8 @@ const typeLabel: Record<string, string> = {
 };
 
 export default function LocationsPage() {
+  const { locations, loadingDashboard } = useDemoStore();
+
   return (
     <div className="mx-auto max-w-5xl">
       <div className="mb-6">
@@ -56,6 +60,11 @@ export default function LocationsPage() {
             </Card>
           </Link>
         ))}
+        {locations.length === 0 && (
+          <div className="col-span-full rounded-md border border-dashed border-border p-6 text-center text-sm text-muted">
+            {loadingDashboard ? "Loading locations…" : "No locations yet."}
+          </div>
+        )}
       </div>
     </div>
   );
