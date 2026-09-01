@@ -16,7 +16,7 @@ const columns: { status: WorkStatus; label: string }[] = [
 ];
 
 export default function WorkPage() {
-  const { work } = useDemoStore();
+  const { work, locations } = useDemoStore();
 
   return (
     <div className="mx-auto max-w-6xl">
@@ -43,7 +43,7 @@ export default function WorkPage() {
                     <div className="text-xs font-medium leading-snug text-foreground">{w.title}</div>
                     <div className="mt-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[10.5px] text-muted">
                       <span className="flex items-center gap-1">
-                        <MapPin className="h-3 w-3" /> {locationName(w.locationId)}
+                        <MapPin className="h-3 w-3" /> {locationName(locations, w.locationId)}
                       </span>
                       <span className="flex items-center gap-1">
                         <User className="h-3 w-3" /> {w.assignee}
