@@ -1,82 +1,215 @@
 "use client";
 
-import Image from "next/image";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { useState } from "react";
 import {
   LayoutDashboard,
+  Inbox,
+  CalendarDays,
+  BrainCircuit,
+  ShieldCheck,
+  KanbanSquare,
   MapPin,
   Boxes,
-  ListChecks,
-  AlertTriangle,
-  ShieldCheck,
-  Bot,
-  TrendingUp,
+  Sparkles,
+  BarChart3,
+  Settings,
+  LifeBuoy,
+  UserCircle,
+  Building2,
+  ChevronRight,
+  MessageSquare,
 } from "lucide-react";
 import { cn } from "@/lib/utils";
-import { useDemoStore } from "@/lib/store";
 
-const nav = [
-  { href: "/command-center", label: "Command Center", icon: LayoutDashboard },
-  { href: "/issues", label: "Issues & Recommendations", icon: AlertTriangle },
-  { href: "/approvals", label: "Approval Center", icon: ShieldCheck },
-  { href: "/work", label: "Work", icon: ListChecks },
-  { href: "/locations", label: "Locations", icon: MapPin },
-  { href: "/resources", label: "Resources", icon: Boxes },
-  { href: "/ai", label: "Ask Kloyya", icon: Bot },
-  { href: "/outcomes", label: "Outcomes", icon: TrendingUp },
+// Définition des sections et éléments du menu
+const MENU_SECTIONS = [
+  {
+    title: "Vue d'ensemble",
+    items: [
+      { label: "Dashboard", href: "/command-center", icon: LayoutDashboard },
+      { label: "Inbox Unifiée", href: "/inbox", icon: Inbox, badge: 3 }, // Badge pour les notifs non lues
+      { label: "Calendrier", href: "/calendar", icon: CalendarDays },
+    ],
+  },
+  {
+    title: "Opérations Physiques",
+    items: [
+      { label: "Sites & Lieux", href: "/locations", icon: MapPin },
+      { label: "Ressources", href: "/resources", icon: Boxes },
+      { label: "Travail & Tâches", href: "/work", icon: KanbanSquare },
+    ],
+  },
+  {
+    title: "Intelligence & Contrôle",
+    items: [
+      { label: "Insights Kloyya", href: "/insights", icon: BrainCircuit },
+      { label: "Centre d'Approbation", href: "/approvals", icon: ShieldCheck, highlight: true },
+      { label: "Rapports", href: "/outcomes", icon: BarChart3 },
+    ],
+  },
 ];
 
 export function Sidebar() {
   const pathname = usePathname();
-  const { issues, orgProfile } = useDemoStore();
-  const pendingApprovals = issues.filter(
-    (i) => i.recommendation.action.status === "pending_approval"
-  ).length;
+  const [isSupportModalOpen, setIsSupportModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
 
   return (
-    <aside className="hidden w-60 shrink-0 flex-col border-r border-border bg-surface px-3 py-4 lg:flex">
-      <div className="flex items-center gap-2 px-2 pb-6">
-        <Image src="/kloyya-mark.png" alt="Kloyya" width={22} height={22} className="shrink-0" />
-        <div className="text-sm font-medium leading-none">Kloyya</div>
+    <aside className="flex h-screen w-64 flex-col border-r border-border bg-surface transition-all duration-300">
+      {/* Logo & Branding */}
+      <div className="flex h-16 items-center gap-3 border-b border-border px-5">
+        <div className="flex h-8 w-8 items-center justify-center rounded-md bg-accent text-white">
+          <Sparkles className="h-4 w-4" />
+        </div>
+        <div>
+          <h1 className="text-sm font-bold tracking-tight text-foreground">Kloyya</h1>
+          <p className="text-[10px] text-muted">AI Chief of Staff</p>
+        </div>
       </div>
 
-      <nav className="flex flex-1 flex-col gap-0.5">
-        {nav.map((item) => {
-          const active = pathname === item.href || pathname.startsWith(item.href + "/");
-          const badge = item.href === "/approvals" ? pendingApprovals : 0;
-          return (
-            <Link
-              key={item.href}
-              href={item.href}
-              className={cn(
-                "group flex items-center justify-between rounded-md px-3 py-1.5 text-[13px] transition-colors",
-                active
-                  ? "bg-white/[0.06] text-foreground"
-                  : "text-muted hover:bg-white/[0.03] hover:text-foreground"
-              )}
-            >
-              <span className="flex items-center gap-2.5">
-                <item.icon
-                  className={cn("h-4 w-4", active ? "text-accent" : "text-muted group-hover:text-foreground")}
-                  strokeWidth={1.75}
-                />
-                {item.label}
-              </span>
-              {badge > 0 && (
-                <span className="rounded bg-accent/15 px-1.5 py-0.5 text-[10px] font-medium text-accent">
-                  {badge}
-                </span>
-              )}
-            </Link>
-          );
-        })}
+      {/* Navigation Principale (Scrollable) */}
+      <nav className="flex-1 overflow-y-auto px-3 py-4">
+        {MENU_SECTIONS.map((section, idx) => (
+          <div key={idx} className="mb-6">
+            <h3 className="mb-2 px-2 text-[10px] font-semibold uppercase tracking-wider text-muted">
+              {section.title}
+            </h3>
+            <ul className="space-y-1">
+              {section.items.map((item) => {
+                const isActive = pathname === item.href || pathname?.startsWith(`${item.href}/`);
+                const Icon = item.icon;
+
+                return (
+                  <li key={item.href}>
+                    <Link
+                      href={item.href}
+                      className={cn(
+                        "group flex items-center justify-between rounded-md px-3 py-2 text-sm font-medium transition-colors",
+                        isActive
+                          ? "bg-accent/10 text-accent"
+                          : "text-muted hover:bg-white/5 hover:text-foreground",
+                        item.highlight && !isActive && "border border-accent/30 text-accent hover:bg-accent/5"
+                      )}
+                    >
+                      <div className="flex items-center gap-3">
+                        <Icon
+                          className={cn(
+                            "h-4 w-4 transition-colors",
+                            isActive ? "text-accent" : "text-muted group-hover:text-foreground"
+                          )}
+                        />
+                        {item.label}
+                      </div>
+                      {item.badge && (
+                        <span className="flex h-5 w-5 items-center justify-center rounded-full bg-accent text-[10px] font-bold text-white">
+                          {item.badge}
+                        </span>
+                      )}
+                    </Link>
+                  </li>
+                );
+              })}
+            </ul>
+          </div>
+        ))}
+
+        {/* Bouton Chatbot Kloyya (Mis en avant) */}
+        <div className="mt-6 rounded-lg border border-accent/20 bg-accent/5 p-3">
+          <Link
+            href="/ai"
+            className="flex items-center gap-3 text-sm font-semibold text-accent transition-colors hover:text-accent/80"
+          >
+            <MessageSquare className="h-5 w-5" />
+            <span>Demander à Kloyya</span>
+          </Link>
+          <p className="mt-2 text-[11px] leading-relaxed text-muted">
+            Posez une question sur vos sites, ressources ou données connectées.
+          </p>
+        </div>
       </nav>
 
-      <div className="rounded-md border border-border bg-surface-2 p-3">
-        <div className="truncate text-[11px] font-medium text-foreground">{orgProfile.name}</div>
-        <div className="mt-0.5 text-[11px] text-muted">{orgProfile.industry}</div>
+      {/* Section Basse (Paramètres, Support, Profil) */}
+      <div className="border-t border-border p-3">
+        <ul className="space-y-1">
+          <li>
+            <Link
+              href="/settings"
+              className="flex items-center gap-3 rounded-md px-3 py-2 text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground"
+            >
+              <Settings className="h-4 w-4" />
+              Paramètres
+            </Link>
+          </li>
+          <li>
+            <button
+              onClick={() => setIsSupportModalOpen(true)}
+              className="flex w-full items-center gap-3 rounded-md px-3 py-2 text-left text-sm text-muted transition-colors hover:bg-white/5 hover:text-foreground"
+            >
+              <LifeBuoy className="h-4 w-4" />
+              Support & Contact
+            </button>
+          </li>
+        </ul>
+
+        {/* Profil Utilisateur / Institution */}
+        <button
+          onClick={() => setIsProfileModalOpen(true)}
+          className="mt-3 flex w-full items-center gap-3 rounded-md border border-border bg-surface p-2.5 transition-colors hover:bg-white/5"
+        >
+          <div className="flex h-9 w-9 items-center justify-center rounded-full bg-accent/10 text-accent">
+            <Building2 className="h-5 w-5" />
+          </div>
+          <div className="flex-1 text-left">
+            <p className="text-xs font-semibold text-foreground">Acme Logistics</p>
+            <p className="text-[10px] text-muted">Plan Team · Owner</p>
+          </div>
+          <ChevronRight className="h-4 w-4 text-muted" />
+        </button>
       </div>
+
+      {/* --- MODALES (À implémenter ou connecter à tes composants existants) --- */}
+      
+      {/* Exemple de structure pour la modale Support */}
+      {isSupportModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
+            <h3 className="mb-4 text-lg font-semibold text-foreground">Contacter le Support</h3>
+            <p className="mb-4 text-sm text-muted">Notre équipe est disponible pour vous aider.</p>
+            <div className="space-y-3">
+              <div className="rounded-md border border-border bg-white/5 p-3 text-sm text-foreground">
+                📧 support@kloyya.com
+              </div>
+              <div className="rounded-md border border-border bg-white/5 p-3 text-sm text-foreground">
+                📞 +33 1 23 45 67 89
+              </div>
+            </div>
+            <button
+              onClick={() => setIsSupportModalOpen(false)}
+              className="mt-6 w-full rounded-md bg-accent py-2 text-sm font-semibold text-white hover:bg-accent/90"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
+
+      {/* Exemple de structure pour la modale Profil */}
+      {isProfileModalOpen && (
+        <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/60 backdrop-blur-sm">
+          <div className="w-full max-w-md rounded-lg border border-border bg-surface p-6 shadow-2xl">
+            <h3 className="mb-4 text-lg font-semibold text-foreground">Paramètres du Compte</h3>
+            <p className="mb-4 text-sm text-muted">Gérez votre institution et votre session.</p>
+            <button
+              onClick={() => setIsProfileModalOpen(false)}
+              className="w-full rounded-md border border-border bg-surface py-2 text-sm font-semibold text-foreground hover:bg-white/5"
+            >
+              Fermer
+            </button>
+          </div>
+        </div>
+      )}
     </aside>
   );
 }
