@@ -5,10 +5,12 @@
 import { FormEvent, Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
+import { LoginShowcase } from "@/components/auth/login-showcase";
 
 function LoginForm() {
   const router = useRouter();
   const searchParams = useSearchParams();
+  const configError = searchParams.get("error") === "config";
 
   const [mode, setMode] = useState<"login" | "signup">("login");
   const [email, setEmail] = useState("");
@@ -82,7 +84,7 @@ function LoginForm() {
   }
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-6">
+    <div className="flex w-full items-center justify-center px-6 py-16 lg:py-0">
       <div className="w-full max-w-md">
         <div className="mb-8">
           <div className="text-xs font-medium uppercase tracking-wider text-muted">
@@ -101,6 +103,13 @@ function LoginForm() {
               : "Connect your business and start operating with Kloyya."}
           </p>
         </div>
+
+        {configError && (
+          <div className="mb-4 rounded-md border border-red-500/20 bg-red-500/10 px-4 py-3 text-sm text-red-300">
+            Configuration issue: the app couldn&apos;t reach Supabase.
+            Please try again in a moment.
+          </div>
+        )}
 
         <form onSubmit={submit} className="space-y-4">
           {mode === "signup" && (
@@ -175,14 +184,17 @@ function LoginForm() {
             : "Already have an account? Sign in"}
         </button>
       </div>
-    </main>
+    </div>
   );
 }
 
 export default function LoginPage() {
   return (
-    <Suspense fallback={null}>
-      <LoginForm />
-    </Suspense>
+    <main className="grid min-h-screen grid-cols-1 lg:grid-cols-2">
+      <Suspense fallback={null}>
+        <LoginForm />
+      </Suspense>
+      <LoginShowcase />
+    </main>
   );
 }
