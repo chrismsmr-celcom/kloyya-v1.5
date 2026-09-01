@@ -6,14 +6,14 @@ import { ArrowLeft, Radio } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HealthRing } from "@/components/ui/health-ring";
-import { locationName, resources } from "@/lib/demo-data";
+import { locationName } from "@/lib/demo-data";
 import { useDemoStore } from "@/lib/store";
 import { severityTone } from "@/lib/format";
 
 export default function ResourceDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { issues, work } = useDemoStore();
+  const { issues, work, resources, locations } = useDemoStore();
   const resource = resources.find((r) => r.id === params.id);
 
   if (!resource) {
@@ -38,7 +38,7 @@ export default function ResourceDetailPage() {
           <div>
             <h1 className="text-2xl font-semibold tracking-tight">{resource.name}</h1>
             <p className="mt-1 text-sm text-muted">
-              {resource.type} · {locationName(resource.locationId)}
+              {resource.type} · {locationName(locations, resource.locationId)}
             </p>
           </div>
         </div>
@@ -57,6 +57,7 @@ export default function ResourceDetailPage() {
                 <div className="mt-1 text-sm font-semibold text-foreground">{m.value}</div>
               </div>
             ))}
+            {resource.metrics.length === 0 && <p className="text-xs text-muted">No metrics reported.</p>}
           </div>
         </Card>
 
@@ -69,6 +70,7 @@ export default function ResourceDetailPage() {
                 {e}
               </div>
             ))}
+            {resource.recentEvents.length === 0 && <p className="text-xs text-muted">No recent events.</p>}
           </div>
         </Card>
 
