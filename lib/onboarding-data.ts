@@ -4,21 +4,32 @@
 
 import {
   BarChart3,
-  CalendarCheck,
+  CalendarDays,
+  CheckCircle2,
+  CheckSquare,
   ClipboardList,
+  Columns,
+  Contact,
   DollarSign,
   FileText,
+  Folder,
   Handshake,
   Heart,
+  ListTodo,
+  Mail,
   Map as MapIcon,
   Megaphone,
+  MessageCircle,
+  MessageSquare,
   Package,
   Radio,
   Star,
   Stethoscope,
+  Table,
   Truck,
   Users,
   Wrench,
+  Zap,
   type LucideIcon,
 } from "lucide-react";
 import type { AutonomyLevel, Severity } from "./types";
@@ -61,52 +72,51 @@ export function shuffled<T>(arr: T[]): T[] {
   return a;
 }
 
-// Kept outside the component so the randomness isn't treated as a render-impure call.
 export function pickLocationCount(poolLength: number): number {
   return Math.min(poolLength, 3 + Math.round(Math.random()));
 }
 
 export const SOURCE_LIBRARY: Record<string, { label: string; icon: LucideIcon }> = {
-  fleet: { label: "Fleet & GPS", icon: Truck },
-  inventory: { label: "Inventory & Warehouse", icon: Package },
-  team: { label: "Team & Scheduling", icon: Users },
-  maintenance: { label: "Maintenance & IoT", icon: Wrench },
-  orders: { label: "Customer Orders", icon: Radio },
-  pos: { label: "POS & Sales", icon: DollarSign },
-  marketing: { label: "Marketing & Promotions", icon: Megaphone },
-  content: { label: "Content Calendar", icon: FileText },
-  engagement: { label: "Audience & Engagement", icon: Heart },
-  campaigns: { label: "Campaigns & Ads", icon: Megaphone },
-  analytics: { label: "Analytics", icon: BarChart3 },
-  pipeline: { label: "Customer Pipeline (CRM)", icon: Handshake },
-  roadmap: { label: "Product Roadmap", icon: MapIcon },
-  finance: { label: "Finance & Runway", icon: DollarSign },
-  bookings: { label: "Bookings & Reservations", icon: CalendarCheck },
-  supplies: { label: "Inventory & Supplies", icon: Package },
-  patients: { label: "Patient Scheduling", icon: Stethoscope },
-  compliance: { label: "Compliance & Records", icon: ClipboardList },
-  feedback: { label: "Guest Feedback", icon: Star },
-  documents: { label: "Documents & Knowledge", icon: FileText },
-  calendar: { label: "Calendar & Tasks", icon: CalendarCheck },
+  // Communication
+  gmail: { label: "Gmail", icon: Mail },
+  slack: { label: "Slack", icon: MessageSquare },
+  whatsapp: { label: "WhatsApp", icon: MessageCircle },
+  
+  // Productivité & Docs
+  googlecalendar: { label: "Google Calendar", icon: CalendarDays },
+  googledrive: { label: "Google Drive", icon: Folder },
+  googlesheets: { label: "Google Sheets / Excel", icon: Table },
+  notion: { label: "Notion", icon: FileText },
+  
+  // Gestion de projet & Ops
+  jira: { label: "Jira", icon: ListTodo },
+  linear: { label: "Linear", icon: Zap },
+  trello: { label: "Trello", icon: Columns },
+  asana: { label: "Asana", icon: CheckSquare },
+  
+  // CRM & Suivi
+  hubspot: { label: "HubSpot (CRM)", icon: Contact },
+  analytics: { label: "Tableau / Analytics", icon: BarChart3 },
 };
 
 const SOURCE_SETS: Record<string, string[]> = {
-  Startups: ["roadmap", "pipeline", "team", "finance", "analytics"],
-  "Social Media": ["content", "engagement", "campaigns", "analytics", "team"],
-  "Logistics & Distribution": ["fleet", "inventory", "team", "maintenance", "orders"],
-  Manufacturing: ["maintenance", "inventory", "team", "fleet", "compliance"],
-  "Retail & E-commerce": ["inventory", "orders", "pos", "marketing", "team"],
-  "Field Services": ["team", "fleet", "maintenance", "orders", "calendar"],
-  Construction: ["team", "fleet", "maintenance", "compliance", "documents"],
-  "Healthcare Operations": ["patients", "supplies", "team", "compliance", "documents"],
-  Agriculture: ["fleet", "inventory", "maintenance", "team", "orders"],
-  Hospitality: ["bookings", "supplies", "team", "feedback", "pos"],
-  "Professional Services": ["pipeline", "team", "calendar", "documents", "analytics"],
-  "Technology / SaaS": ["roadmap", "pipeline", "analytics", "team", "documents"],
-  Education: ["calendar", "team", "documents", "compliance", "analytics"],
-  Nonprofit: ["pipeline", "team", "finance", "documents", "calendar"],
+  Startups: ["slack", "notion", "linear", "gmail", "hubspot"],
+  "Social Media": ["gmail", "slack", "googlesheets", "notion", "analytics"],
+  "Logistics & Distribution": ["googlesheets", "whatsapp", "googlecalendar", "trello", "gmail"],
+  Manufacturing: ["googlesheets", "slack", "jira", "gmail", "whatsapp"],
+  "Retail & E-commerce": ["googlesheets", "gmail", "slack", "hubspot", "whatsapp"],
+  "Field Services": ["whatsapp", "googlecalendar", "googlesheets", "trello", "gmail"],
+  Construction: ["googlesheets", "whatsapp", "trello", "gmail", "googledrive"],
+  "Healthcare Operations": ["googlecalendar", "gmail", "googledrive", "notion", "whatsapp"],
+  Agriculture: ["googlesheets", "whatsapp", "googlecalendar", "gmail", "trello"],
+  Hospitality: ["googlecalendar", "gmail", "whatsapp", "googlesheets", "hubspot"],
+  "Professional Services": ["notion", "gmail", "googlecalendar", "hubspot", "slack"],
+  "Technology / SaaS": ["linear", "slack", "notion", "gmail", "jira"],
+  Education: ["googlecalendar", "gmail", "googledrive", "notion", "whatsapp"],
+  Nonprofit: ["gmail", "googlesheets", "notion", "whatsapp", "hubspot"],
 };
-const DEFAULT_SOURCE_IDS = ["team", "calendar", "documents", "analytics", "pipeline"];
+
+const DEFAULT_SOURCE_IDS = ["gmail", "googlecalendar", "googlesheets", "notion", "slack"];
 
 export function getSourceIds(industry: string | null): string[] {
   if (!industry) return DEFAULT_SOURCE_IDS;
