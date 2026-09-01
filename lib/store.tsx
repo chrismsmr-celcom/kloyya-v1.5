@@ -226,9 +226,7 @@ export function DemoStoreProvider({
   const [resources, setResources] = useState<Resource[]>([]);
 
   const [loadingDashboard, setLoadingDashboard] = useState(false);
-  const [dashboardError, setDashboardError] = useState
-    string | null
-  >(null);
+  const [dashboardError, setDashboardError] = useState<string | null>(null);
 
   const [autonomyLevel, setAutonomyLevel] =
     useState<AutonomyLevel>(2);
