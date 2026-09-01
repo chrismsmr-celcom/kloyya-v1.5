@@ -5,14 +5,13 @@ import { ArrowLeft } from "lucide-react";
 import { Card, CardHeader } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { HealthRing } from "@/components/ui/health-ring";
-import { locations, resources } from "@/lib/demo-data";
 import { useDemoStore } from "@/lib/store";
 import { severityTone, workStatusLabel, workStatusTone } from "@/lib/format";
 
 export default function LocationDetailPage() {
   const params = useParams<{ id: string }>();
   const router = useRouter();
-  const { issues, work } = useDemoStore();
+  const { issues, work, locations, resources } = useDemoStore();
   const loc = locations.find((l) => l.id === params.id);
 
   if (!loc) {
