@@ -18,8 +18,10 @@ import type {
   EvidenceItem,
   Issue,
   IssueStatus,
+  Location,
   OutcomeEntry,
   Recommendation,
+  Resource,
   Severity,
   WorkItem,
 } from "./types";
@@ -39,6 +41,8 @@ type DemoStore = {
   issues: Issue[];
   work: WorkItem[];
   outcomes: OutcomeEntry[];
+  locations: Location[];
+  resources: Resource[];
 
   loadingDashboard: boolean;
   dashboardError: string | null;
@@ -72,6 +76,10 @@ type DemoStore = {
 
 const DemoContext = createContext<DemoStore | null>(null);
 
+// ---- Normalisation des lignes Supabase -> types front ----
+// NB: les noms de colonnes sont déduits des routes API existantes.
+// Ajuste les accès `row.xxx` si tes vraies colonnes diffèrent.
+
 function normalizeIssue(row: any): Issue {
   const recommendationRow = Array.isArray(row.recommendations)
     ? row.recommendations[0]
@@ -103,8 +111,7 @@ function normalizeIssue(row: any): Issue {
       "Proposed action",
     steps,
     currentStep: actionRow?.current_step ?? 0,
-    status: (actionRow?.status ??
-      "pending_approval") as ActionStatus,
+    status: (actionRow?.status ?? "pending_approval") as ActionStatus,
     executionMode:
       actionRow?.execution_mode ?? "approval_required",
     estimatedImpact:
@@ -140,7 +147,7 @@ function normalizeIssue(row: any): Issue {
     status: (row.status ?? "open") as IssueStatus,
     locationId: row.location_id ?? undefined,
     resourceId: row.resource_id ?? undefined,
-    workId: row.work_id ?? undefined,
+    workId: row.work_item_id ?? row.work_id ?? undefined,
     detectedAt: row.created_at
       ? new Date(row.created_at).toLocaleString()
       : "just now",
@@ -158,18 +165,70 @@ function normalizeOutcome(row: any): OutcomeEntry {
   };
 }
 
+function normalizeLocation(row: any): Location {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    city: row.city ?? "",
+    country: row.country ?? "",
+    activeWork: row.activeWork ?? row.active_work ?? 0,
+    openIssues: row.openIssues ?? row.open_issues ?? 0,
+    health: row.health ?? 100,
+  };
+}
+
+function normalizeResource(row: any): Resource {
+  return {
+    id: row.id,
+    name: row.name,
+    type: row.type,
+    status: row.status,
+    locationId: row.location_id ?? undefined,
+    health: row.health ?? 100,
+    metrics: Array.isArray(row.metrics) ? row.metrics : [],
+    recentEvents: Array.isArray(row.recent_events)
+      ? row.recent_events
+      : [],
+  };
+}
+
+function normalizeWorkItem(row: any): WorkItem {
+  const resourceIds: string[] = Array.isArray(row.work_item_resources)
+    ? row.work_item_resources
+        .map((link: any) => link.resource_id)
+        .filter(Boolean)
+    : [];
+
+  return {
+    id: row.id,
+    title: row.title,
+    type: row.type,
+    status: row.status,
+    priority: row.priority,
+    assignee: row.assignee ?? "Unassigned",
+    locationId: row.location_id ?? undefined,
+    resourceIds,
+    etaMinutes: row.eta_minutes ?? undefined,
+    delayMinutes: row.delay_minutes ?? undefined,
+  };
+}
+
 export function DemoStoreProvider({
   children,
 }: {
   children: ReactNode;
 }) {
   const [issues, setIssues] = useState<Issue[]>([]);
-  const [work] = useState<WorkItem[]>([]);
+  const [work, setWork] = useState<WorkItem[]>([]);
   const [outcomes, setOutcomes] = useState<OutcomeEntry[]>([]);
+  const [locations, setLocations] = useState<Location[]>([]);
+  const [resources, setResources] = useState<Resource[]>([]);
 
   const [loadingDashboard, setLoadingDashboard] = useState(false);
-  const [dashboardError, setDashboardError] =
-    useState<string | null>(null);
+  const [dashboardError, setDashboardError] = useState
+    string | null
+  >(null);
 
   const [autonomyLevel, setAutonomyLevel] =
     useState<AutonomyLevel>(2);
@@ -183,7 +242,7 @@ export function DemoStoreProvider({
 
   const [onboarded, setOnboarded] = useState(false);
 
-  const timers = useRef<ReturnType<typeof setTimeout>[]>([]);
+  const timers = useRef<NodeJS.Timeout[]>([]);
 
   useEffect(() => {
     return () => {
@@ -196,28 +255,63 @@ export function DemoStoreProvider({
     setDashboardError(null);
 
     try {
-      const response = await fetch("/api/dashboard", {
-        method: "GET",
-        cache: "no-store",
-      });
+      const [
+        dashboardResponse,
+        locationsResponse,
+        resourcesResponse,
+        workResponse,
+      ] = await Promise.all([
+        fetch("/api/dashboard", { cache: "no-store" }),
+        fetch("/api/locations", { cache: "no-store" }),
+        fetch("/api/resources", { cache: "no-store" }),
+        fetch("/api/work", { cache: "no-store" }),
+      ]);
 
-      const data = await response.json();
+      const [
+        dashboardData,
+        locationsData,
+        resourcesData,
+        workData,
+      ] = await Promise.all([
+        dashboardResponse.json(),
+        locationsResponse.json(),
+        resourcesResponse.json(),
+        workResponse.json(),
+      ]);
 
-      if (!response.ok || !data.ok) {
+      if (!dashboardResponse.ok || !dashboardData.ok) {
         throw new Error(
-          data.error ?? "Unable to load dashboard data",
+          dashboardData.error ?? "Unable to load dashboard data",
         );
       }
 
       setIssues(
-        Array.isArray(data.issues)
-          ? data.issues.map(normalizeIssue)
+        Array.isArray(dashboardData.issues)
+          ? dashboardData.issues.map(normalizeIssue)
           : [],
       );
 
       setOutcomes(
-        Array.isArray(data.outcomes)
-          ? data.outcomes.map(normalizeOutcome)
+        Array.isArray(dashboardData.outcomes)
+          ? dashboardData.outcomes.map(normalizeOutcome)
+          : [],
+      );
+
+      setLocations(
+        locationsResponse.ok && Array.isArray(locationsData.locations)
+          ? locationsData.locations.map(normalizeLocation)
+          : [],
+      );
+
+      setResources(
+        resourcesResponse.ok && Array.isArray(resourcesData.resources)
+          ? resourcesData.resources.map(normalizeResource)
+          : [],
+      );
+
+      setWork(
+        workResponse.ok && Array.isArray(workData.work)
+          ? workData.work.map(normalizeWorkItem)
           : [],
       );
     } catch (error) {
@@ -232,7 +326,7 @@ export function DemoStoreProvider({
   }, []);
 
   useEffect(() => {
-    void refreshDashboard();
+    refreshDashboard();
   }, [refreshDashboard]);
 
   const pushToast = useCallback(
@@ -295,7 +389,7 @@ export function DemoStoreProvider({
 
       setOnboarded(true);
 
-      await refreshDashboard();
+      refreshDashboard();
     },
     [autonomyLevel, refreshDashboard],
   );
@@ -343,7 +437,8 @@ export function DemoStoreProvider({
         throw new Error("Issue not found");
       }
 
-      const actionId = issue.recommendation.action.id;
+      const actionId =
+        issue.recommendation.action.id;
 
       if (!actionId) {
         throw new Error(
@@ -397,7 +492,7 @@ export function DemoStoreProvider({
   const rejectAction = useCallback(
     async (issueId: string) => {
       updateAction(issueId, {
-        status: "rejected",
+        status: "rejected" as ActionStatus,
       });
 
       setIssues((current) =>
@@ -517,6 +612,8 @@ export function DemoStoreProvider({
     issues,
     work,
     outcomes,
+    locations,
+    resources,
 
     loadingDashboard,
     dashboardError,
