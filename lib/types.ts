@@ -31,7 +31,7 @@ export type Resource = {
   name: string;
   type: ResourceType;
   status: ResourceStatus;
-  locationId: string;
+  locationId?: string;
   health: number;
   metrics: { label: string; value: string }[];
   recentEvents: string[];
@@ -51,7 +51,7 @@ export type WorkItem = {
   status: WorkStatus;
   priority: "low" | "medium" | "high";
   assignee: string;
-  locationId: string;
+  locationId?: string;
   resourceIds: string[];
   etaMinutes?: number;
   delayMinutes?: number;
@@ -94,9 +94,6 @@ export type Issue = {
   description: string;
   severity: Severity;
   status: IssueStatus;
-  // Pas de colonne location_id / resource_id / work_id dans le schema
-  // Supabase actuel (voir app/api/dashboard/route.ts) : ces champs restent
-  // optionnels tant que ces tables n'existent pas côté backend.
   locationId?: string;
   resourceId?: string;
   workId?: string;
